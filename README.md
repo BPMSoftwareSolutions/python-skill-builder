@@ -20,12 +20,7 @@ This interactive training app provides:
 
 ### Installation
 
-1. **Navigate to the project directory:**
-   ```bash
-   cd packages/python-skill-builder
-   ```
-
-2. **Create a virtual environment:**
+1. **Create a virtual environment:**
    ```bash
    # Windows
    python -m venv .venv
@@ -151,9 +146,10 @@ The app uses Python's AST (Abstract Syntax Tree) to validate and restrict code e
 
 ### File Structure
 ```
-packages/python-skill-builder/
+python-skill-builder/
 ├── app.py                    # Flask backend
 ├── requirements.txt          # Python dependencies
+├── package.json              # Node.js dependencies
 ├── README.md                 # This file
 ├── modules/                  # Training content
 │   ├── module_index.json     # Module catalog
@@ -164,10 +160,13 @@ packages/python-skill-builder/
 │   ├── comprehensions_and_generators.json
 │   ├── numpy_intro.json
 │   └── flask_intro.json
-└── static/                   # Frontend files
-    ├── index.html            # Main UI
-    ├── app.js                # Application logic
-    └── styles.css            # Dark theme styling
+├── static/                   # Frontend files
+│   ├── index.html            # Main UI
+│   ├── app.js                # Application logic
+│   ├── styles.css            # Dark theme styling
+│   └── js/                   # Modular JavaScript components
+├── tests/                    # Python test suite
+└── .github/workflows/        # CI/CD pipelines
 ```
 
 ## 🐛 Troubleshooting
@@ -178,7 +177,7 @@ packages/python-skill-builder/
 - Check all dependencies installed: `pip list`
 
 ### Modules not loading
-- Ensure you're in the correct directory: `packages/python-skill-builder`
+- Ensure you're in the correct directory: `python-skill-builder`
 - Check that `modules/` directory exists with JSON files
 - Look for errors in browser console (F12)
 
