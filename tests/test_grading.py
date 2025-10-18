@@ -3,7 +3,7 @@ Unit tests for grading engine
 Tests all features from features.json -> backend.grading
 """
 import pytest
-from app import run_user_and_tests
+from main import run_user_and_tests
 
 
 class TestGradingSingleApproach:

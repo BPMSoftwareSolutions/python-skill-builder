@@ -40,7 +40,7 @@ for module in data['modules']:
 
 # Test 4: Test grading logic with sample code
 print("\nTest 4: Testing grading logic...")
-from app import run_user_and_tests
+from main import run_user_and_tests
 
 # Test even_squares function
 user_code = """

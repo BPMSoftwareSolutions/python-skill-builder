@@ -3,7 +3,7 @@ Test suite for AOP retry decorator functionality
 Tests that the retry decorator properly retries failed operations
 """
 import pytest
-from app import run_user_and_tests
+from main import run_user_and_tests
 
 
 class TestAOPRetryDecorator:

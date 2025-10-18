@@ -2,7 +2,7 @@
 import sys
 sys.path.insert(0, '.')
 
-from app import run_user_and_tests
+from main import run_user_and_tests
 
 # Test the retry decorator code
 user_code = """
