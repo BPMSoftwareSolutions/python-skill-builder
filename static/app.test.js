@@ -933,3 +933,271 @@ describe('Visualization Manager', () => {
   });
 });
 
+// Test: Test Panel Component
+describe('Test Panel Component', () => {
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div id="tests-container"></div>
+      <div id="test-progress"></div>
+    `;
+  });
+
+  test('renders test cases with pass/fail indicators', () => {
+    // This test covers: Test Panel - Render test cases with status indicators
+    const { TestPanelComponent } = require('./js/components/test-panel.js');
+    const container = document.getElementById('tests-container');
+    const tests = [
+      {
+        id: 1,
+        name: 'test_add_positive_numbers',
+        status: 'pass',
+        assertion: 'assertEqual(add(2, 3), 5)',
+        expected: 5,
+        actual: 5,
+        mocks: { inputs: [2, 3], expected: 5 }
+      },
+      {
+        id: 2,
+        name: 'test_add_negative_numbers',
+        status: 'fail',
+        assertion: 'assertEqual(add(-1, -2), -3)',
+        expected: -3,
+        actual: null,
+        error: 'Expected -3, got None',
+        mocks: { inputs: [-1, -2], expected: -3 }
+      }
+    ];
+
+    TestPanelComponent.render(tests, container);
+
+    expect(container.children.length).toBe(2);
+    expect(container.querySelector('.test-pass')).toBeTruthy();
+    expect(container.querySelector('.test-fail')).toBeTruthy();
+  });
+
+  test('displays test details when expanded', () => {
+    // This test covers: Test Panel - Expandable test details
+    const { TestPanelComponent } = require('./js/components/test-panel.js');
+    const container = document.getElementById('tests-container');
+    const tests = [
+      {
+        id: 1,
+        name: 'test_add_positive_numbers',
+        status: 'pass',
+        assertion: 'assertEqual(add(2, 3), 5)',
+        expected: 5,
+        actual: 5,
+        mocks: { inputs: [2, 3], expected: 5 }
+      }
+    ];
+
+    TestPanelComponent.render(tests, container);
+
+    const header = container.querySelector('.test-header');
+    const details = container.querySelector('.test-details');
+
+    expect(details.classList.contains('hidden')).toBe(true);
+
+    header.click();
+    expect(details.classList.contains('hidden')).toBe(false);
+  });
+
+  test('updates test status correctly', () => {
+    // This test covers: Test Panel - Update test status
+    const { TestPanelComponent } = require('./js/components/test-panel.js');
+    const container = document.getElementById('tests-container');
+    const tests = [
+      {
+        id: 'test_1',
+        name: 'test_add_positive_numbers',
+        status: 'not_run',
+        assertion: 'assertEqual(add(2, 3), 5)',
+        expected: 5,
+        actual: null,
+        mocks: { inputs: [2, 3], expected: 5 }
+      }
+    ];
+
+    TestPanelComponent.render(tests, container);
+
+    let testElement = container.querySelector('[data-test-id="test_1"]');
+    expect(testElement.className).toContain('test-not_run');
+
+    TestPanelComponent.updateTestStatus('test_1', 'pass', { actual: 5 });
+
+    testElement = container.querySelector('[data-test-id="test_1"]');
+    expect(testElement.className).toContain('test-pass');
+  });
+
+  test('clears all test statuses', () => {
+    // This test covers: Test Panel - Clear all statuses
+    const { TestPanelComponent } = require('./js/components/test-panel.js');
+    const container = document.getElementById('tests-container');
+    const tests = [
+      {
+        id: 1,
+        name: 'test_1',
+        status: 'pass',
+        assertion: 'assertEqual(add(2, 3), 5)',
+        expected: 5,
+        actual: 5,
+        mocks: { inputs: [2, 3], expected: 5 }
+      },
+      {
+        id: 2,
+        name: 'test_2',
+        status: 'fail',
+        assertion: 'assertEqual(add(-1, -2), -3)',
+        expected: -3,
+        actual: null,
+        error: 'Expected -3, got None',
+        mocks: { inputs: [-1, -2], expected: -3 }
+      }
+    ];
+
+    TestPanelComponent.render(tests, container);
+    TestPanelComponent.clearAllStatuses();
+
+    const testElements = container.querySelectorAll('.test-case');
+    testElements.forEach(el => {
+      expect(el.className).toContain('test-not_run');
+    });
+  });
+
+  test('handles empty test list', () => {
+    // This test covers: Test Panel - Handle empty test list
+    const { TestPanelComponent } = require('./js/components/test-panel.js');
+    const container = document.getElementById('tests-container');
+
+    TestPanelComponent.render([], container);
+
+    expect(container.querySelector('.no-tests')).toBeTruthy();
+  });
+});
+
+// Test: Test Progress Component
+describe('Test Progress Component', () => {
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div id="test-progress"></div>
+    `;
+  });
+
+  test('calculates test statistics correctly', () => {
+    // This test covers: Test Progress - Calculate statistics
+    const { TestProgressComponent } = require('./js/components/test-progress.js');
+    const tests = [
+      { id: 1, status: 'pass' },
+      { id: 2, status: 'pass' },
+      { id: 3, status: 'fail' },
+      { id: 4, status: 'not_run' }
+    ];
+
+    const stats = TestProgressComponent.calculateStats(tests);
+
+    expect(stats.total).toBe(4);
+    expect(stats.passed).toBe(2);
+    expect(stats.failed).toBe(1);
+    expect(stats.notRun).toBe(1);
+    expect(stats.passPercentage).toBe(50);
+  });
+
+  test('renders progress bar with correct segments', () => {
+    // This test covers: Test Progress - Render progress bar
+    const { TestProgressComponent } = require('./js/components/test-progress.js');
+    const container = document.getElementById('test-progress');
+    const tests = [
+      { id: 1, status: 'pass' },
+      { id: 2, status: 'pass' },
+      { id: 3, status: 'fail' }
+    ];
+
+    TestProgressComponent.renderProgressBar(tests, container);
+
+    expect(container.querySelector('.progress-container')).toBeTruthy();
+    expect(container.querySelector('.progress-pass')).toBeTruthy();
+    expect(container.querySelector('.progress-fail')).toBeTruthy();
+    expect(container.textContent).toContain('2/3');
+  });
+
+  test('returns correct progress status', () => {
+    // This test covers: Test Progress - Get progress status
+    const { TestProgressComponent } = require('./js/components/test-progress.js');
+
+    const allPass = [
+      { id: 1, status: 'pass' },
+      { id: 2, status: 'pass' }
+    ];
+    expect(TestProgressComponent.getProgressStatus(allPass)).toBe('all_pass');
+
+    const allFail = [
+      { id: 1, status: 'fail' },
+      { id: 2, status: 'fail' }
+    ];
+    expect(TestProgressComponent.getProgressStatus(allFail)).toBe('all_fail');
+
+    const partial = [
+      { id: 1, status: 'pass' },
+      { id: 2, status: 'fail' }
+    ];
+    expect(TestProgressComponent.getProgressStatus(partial)).toBe('partial');
+  });
+
+  test('returns correct progress color', () => {
+    // This test covers: Test Progress - Get progress color
+    const { TestProgressComponent } = require('./js/components/test-progress.js');
+
+    const allPass = [{ id: 1, status: 'pass' }];
+    expect(TestProgressComponent.getProgressColor(allPass)).toBe('progress-success');
+
+    const allFail = [{ id: 1, status: 'fail' }];
+    expect(TestProgressComponent.getProgressColor(allFail)).toBe('progress-error');
+  });
+});
+
+// Test: Assertion Display Component
+describe('Assertion Display Component', () => {
+  test('parses assertEqual assertion', () => {
+    // This test covers: Assertion Display - Parse assertions
+    const { AssertionDisplayComponent } = require('./js/components/assertion-display.js');
+    const assertion = 'assertEqual(add(2, 3), 5)';
+
+    const parsed = AssertionDisplayComponent.parseAssertion(assertion);
+
+    expect(parsed.type).toBe('assertEqual');
+    expect(parsed.raw).toBe(assertion);
+  });
+
+  test('formats assertion for display', () => {
+    // This test covers: Assertion Display - Format assertion
+    const { AssertionDisplayComponent } = require('./js/components/assertion-display.js');
+    const assertion = 'assertEqual(add(2, 3), 5)';
+
+    const html = AssertionDisplayComponent.formatAssertion(assertion, 5, 5);
+
+    expect(html).toContain('assertEqual');
+    expect(html).toContain('Expected');
+    expect(html).toContain('Actual');
+  });
+
+  test('highlights differences between expected and actual', () => {
+    // This test covers: Assertion Display - Highlight differences
+    const { AssertionDisplayComponent } = require('./js/components/assertion-display.js');
+
+    const diff = AssertionDisplayComponent.highlightDifferences(5, 10);
+
+    expect(diff).toContain('difference-highlight');
+    expect(diff).toContain('Value mismatch');
+  });
+
+  test('formats values correctly', () => {
+    // This test covers: Assertion Display - Format values
+    const { AssertionDisplayComponent } = require('./js/components/assertion-display.js');
+
+    expect(AssertionDisplayComponent.formatValue(null)).toContain('null');
+    expect(AssertionDisplayComponent.formatValue(true)).toContain('true');
+    expect(AssertionDisplayComponent.formatValue('hello')).toContain('hello');
+    expect(AssertionDisplayComponent.formatValue([1, 2, 3])).toContain('[');
+  });
+});
+
