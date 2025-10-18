@@ -60,7 +60,7 @@ export class TestProgressComponent {
           <span class="progress-count">${stats.passed}/${stats.total}</span>
         </div>
         <div class="progress-bar-wrapper">
-          <div class="progress-bar">
+          <div class="test-progress-bar">
             ${stats.passed > 0 ? `<div class="progress-segment progress-pass" style="width: ${stats.passPercentage}%"></div>` : ''}
             ${stats.failed > 0 ? `<div class="progress-segment progress-fail" style="width: ${stats.failPercentage}%"></div>` : ''}
             ${stats.notRun > 0 ? `<div class="progress-segment progress-not-run" style="width: ${stats.notRunPercentage}%"></div>` : ''}
