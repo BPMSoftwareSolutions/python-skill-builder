@@ -602,6 +602,9 @@ function updateNavigationButtons() {
   }
 }
 
+// Phase indicator instance (global)
+let phaseIndicator = null;
+
 // Setup event listeners
 function setupEventListeners() {
   document.getElementById('back-btn').onclick = backToDashboard;
@@ -609,6 +612,9 @@ function setupEventListeners() {
   document.getElementById('reset-btn').onclick = resetCode;
   document.getElementById('prev-workshop-btn').onclick = previousWorkshop;
   document.getElementById('next-workshop-btn').onclick = nextWorkshop;
+
+  // Initialize phase indicator
+  initializePhaseIndicator();
 
   // Auto-save code as user types (debounced)
   let saveTimeout;
@@ -636,6 +642,26 @@ function setupEventListeners() {
     if (e.ctrlKey && e.key === 'Enter') {
       submitCode();
     }
+  });
+}
+
+// Initialize phase indicator component
+function initializePhaseIndicator() {
+  // Dynamically import and initialize phase indicator
+  import('./js/components/phase-indicator.js').then(module => {
+    const PhaseIndicatorComponent = module.PhaseIndicatorComponent;
+    phaseIndicator = new PhaseIndicatorComponent();
+
+    // Set up phase change callback
+    phaseIndicator.onPhaseChangeCallback((phase) => {
+      console.log('Phase changed to:', phase);
+      // Future: Update UI based on phase
+      // - RED: Show failing tests
+      // - GREEN: Show passing tests
+      // - REFACTOR: Show metrics and refactor suggestions
+    });
+  }).catch(err => {
+    console.warn('Failed to load phase indicator:', err);
   });
 }
 
