@@ -22,9 +22,12 @@
 
         <!-- Workshop View -->
         <div id="workshop-view" class="view hidden">
+            <!-- Workshop Header -->
             <header class="workshop-header">
-                <button id="back-btn" class="btn-secondary">← Back to Dashboard</button>
-                <div class="workshop-info">
+                <div class="workshop-header-left">
+                    <button id="back-btn" class="btn-secondary">← Back to Dashboard</button>
+                </div>
+                <div class="workshop-header-center">
                     <h2 id="workshop-title">Workshop Title</h2>
                     <div class="workshop-meta">
                         <span id="module-title" class="module-badge">Module</span>
@@ -32,48 +35,100 @@
                         <span id="timer-display" class="timer">⏱️ 00:00</span>
                     </div>
                 </div>
-                <div class="workshop-nav">
-                    <button id="prev-workshop-btn" class="btn-secondary" style="display: none;">← Previous</button>
-                    <button id="next-workshop-btn" class="btn-secondary" style="display: none;">Next →</button>
+                <div class="workshop-header-right">
+                    <div class="phase-indicators">
+                        <button id="phase-red-btn" class="phase-btn phase-red" title="RED Phase: Tests Failing">🔴 RED</button>
+                        <button id="phase-green-btn" class="phase-btn phase-green" title="GREEN Phase: Tests Passing">🟢 GREEN</button>
+                        <button id="phase-refactor-btn" class="phase-btn phase-refactor" title="REFACTOR Phase: Code Quality">🔵 REFACTOR</button>
+                    </div>
+                    <div class="workshop-nav">
+                        <button id="prev-workshop-btn" class="btn-secondary" style="display: none;">← Previous</button>
+                        <button id="next-workshop-btn" class="btn-secondary" style="display: none;">Next →</button>
+                    </div>
                 </div>
             </header>
 
-            <div class="workshop-content">
-                <div class="prompt-section">
-                    <h3>📝 Task</h3>
-                    <p id="workshop-prompt">Workshop prompt will appear here...</p>
-
-                    <!-- Approach selector (shown only for multi-approach workshops) -->
-                    <div id="approach-selector" class="approach-selector" style="display: none;">
-                        <label for="approach-select">Choose your approach:</label>
-                        <select id="approach-select" class="approach-select">
-                            <!-- Options populated by JavaScript -->
-                        </select>
-                        <p id="approach-description" class="approach-description"></p>
+            <!-- 3-Panel Layout: Tests | Code Editor | Mock Data + Metrics -->
+            <div class="workshop-content-3panel">
+                <!-- LEFT PANEL: Test Results -->
+                <div class="panel panel-tests">
+                    <div class="panel-header">
+                        <h3>🧪 Tests</h3>
+                        <span id="test-progress" class="test-progress">0/0</span>
+                    </div>
+                    <div class="panel-content">
+                        <div id="tests-container" class="tests-container">
+                            <!-- Test results will be loaded here -->
+                        </div>
                     </div>
                 </div>
 
-                <div class="editor-section">
-                    <h3>💻 Code Editor</h3>
-                    <textarea id="code-editor" spellcheck="false"></textarea>
-                </div>
-
-                <div class="hints-section">
-                    <h3>💡 Hints</h3>
-                    <div id="hints-container">
-                        <!-- Hints will be loaded here -->
+                <!-- CENTER PANEL: Code Editor -->
+                <div class="panel panel-editor">
+                    <div class="panel-header">
+                        <h3>💻 Code Editor</h3>
+                        <div class="editor-actions">
+                            <button id="submit-btn" class="btn-primary btn-sm">▶️ Run & Grade</button>
+                            <button id="reset-btn" class="btn-secondary btn-sm">🔄 Reset</button>
+                        </div>
+                    </div>
+                    <div class="panel-content editor-content">
+                        <textarea id="code-editor" spellcheck="false" class="code-editor-textarea"></textarea>
                     </div>
                 </div>
 
-                <div class="actions-section">
-                    <button id="submit-btn" class="btn-primary">▶️ Run & Grade</button>
-                    <button id="reset-btn" class="btn-secondary">🔄 Reset Code</button>
-                </div>
+                <!-- RIGHT PANEL: Mock Data + Metrics + Hints -->
+                <div class="panel panel-sidebar">
+                    <div class="panel-header">
+                        <h3>📊 Mock Data & Hints</h3>
+                    </div>
+                    <div class="panel-content sidebar-content">
+                        <!-- Task/Prompt Section -->
+                        <div class="sidebar-section">
+                            <h4>📝 Task</h4>
+                            <p id="workshop-prompt" class="task-prompt">Workshop prompt will appear here...</p>
 
-                <div id="feedback-section" class="feedback-section hidden">
-                    <h3>📊 Results</h3>
-                    <div id="feedback-content"></div>
+                            <!-- Approach selector (shown only for multi-approach workshops) -->
+                            <div id="approach-selector" class="approach-selector" style="display: none;">
+                                <label for="approach-select">Choose your approach:</label>
+                                <select id="approach-select" class="approach-select">
+                                    <!-- Options populated by JavaScript -->
+                                </select>
+                                <p id="approach-description" class="approach-description"></p>
+                            </div>
+                        </div>
+
+                        <!-- Hints Section -->
+                        <div class="sidebar-section">
+                            <h4>💡 Hints</h4>
+                            <div id="hints-container" class="hints-container">
+                                <!-- Hints will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Mock Data Section -->
+                        <div class="sidebar-section">
+                            <h4>🎯 Mock Data</h4>
+                            <div id="mock-data-container" class="mock-data-container">
+                                <!-- Mock data will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Metrics Section -->
+                        <div class="sidebar-section">
+                            <h4>📈 Metrics</h4>
+                            <div id="metrics-container" class="metrics-container">
+                                <!-- Metrics will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Feedback Section (Full Width) -->
+            <div id="feedback-section" class="feedback-section hidden">
+                <h3>📊 Detailed Results</h3>
+                <div id="feedback-content"></div>
             </div>
         </div>
     </div>
