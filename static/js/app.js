@@ -24,6 +24,12 @@ import WorkshopComponent from './components/workshop.js';
 import FeedbackComponent from './components/feedback.js';
 import NavigationComponent from './components/navigation.js';
 import TimerComponent from './components/timer.js';
+import { MockSelectorComponent } from './components/mock-selector.js';
+import { MockPreviewComponent } from './components/mock-preview.js';
+import { MockEditorComponent } from './components/mock-editor.js';
+
+// Import services
+import MockManager from './services/mock-manager.js';
 
 // Import visualizations
 import { visualizationManager } from './visualizations/index.js';
@@ -136,6 +142,9 @@ class PythonTrainingApp {
     // Hide feedback and update navigation
     FeedbackComponent.hide();
     this.updateNavigationButtons();
+
+    // Render mock data
+    this.renderMockData(workshop);
 
     // Start timer
     if (CONFIG.FEATURES.ENABLE_TIMER && workshop.timeLimitMinutes) {
@@ -258,6 +267,101 @@ class PythonTrainingApp {
 
     buttons[index].replaceWith(hintDiv);
     this.stateManager.workshop.revealHint();
+  }
+
+  /**
+   * Render mock data components
+   */
+  renderMockData(workshop) {
+    const mockDataContainer = document.getElementById('mock-data-container');
+    if (!mockDataContainer) return;
+
+    // Initialize mock manager with workshop data
+    MockManager.initializeMockData(workshop);
+
+    // Create tabs for mock selector, preview, and editor
+    mockDataContainer.innerHTML = '';
+
+    // Create tabs container
+    const tabsContainer = document.createElement('div');
+    tabsContainer.className = 'mock-data-tabs';
+
+    // Create tab buttons
+    const selectorTab = document.createElement('button');
+    selectorTab.className = 'mock-data-tab-btn active';
+    selectorTab.textContent = '📋 Select';
+    selectorTab.onclick = () => this.switchMockTab('selector', tabsContainer);
+
+    const previewTab = document.createElement('button');
+    previewTab.className = 'mock-data-tab-btn';
+    previewTab.textContent = '👁️ Preview';
+    previewTab.onclick = () => this.switchMockTab('preview', tabsContainer);
+
+    const editorTab = document.createElement('button');
+    editorTab.className = 'mock-data-tab-btn';
+    editorTab.textContent = '✏️ Create';
+    editorTab.onclick = () => this.switchMockTab('editor', tabsContainer);
+
+    tabsContainer.appendChild(selectorTab);
+    tabsContainer.appendChild(previewTab);
+    tabsContainer.appendChild(editorTab);
+
+    mockDataContainer.appendChild(tabsContainer);
+
+    // Create content containers
+    const selectorContainer = document.createElement('div');
+    selectorContainer.id = 'mock-selector-content';
+    selectorContainer.className = 'mock-data-tab-content active';
+
+    const previewContainer = document.createElement('div');
+    previewContainer.id = 'mock-preview-content';
+    previewContainer.className = 'mock-data-tab-content';
+
+    const editorContainer = document.createElement('div');
+    editorContainer.id = 'mock-editor-content';
+    editorContainer.className = 'mock-data-tab-content';
+
+    mockDataContainer.appendChild(selectorContainer);
+    mockDataContainer.appendChild(previewContainer);
+    mockDataContainer.appendChild(editorContainer);
+
+    // Render selector
+    MockSelectorComponent.render(MockManager, selectorContainer, (mockSetId, mockSet) => {
+      MockPreviewComponent.update(mockSet, previewContainer);
+    });
+
+    // Render initial preview
+    const currentMockSet = MockManager.getCurrentMockSet();
+    MockPreviewComponent.render(currentMockSet, previewContainer);
+
+    // Render editor
+    MockEditorComponent.render(MockManager, editorContainer, () => {
+      // Refresh selector and preview after creating new mock set
+      MockSelectorComponent.render(MockManager, selectorContainer, (mockSetId, mockSet) => {
+        MockPreviewComponent.update(mockSet, previewContainer);
+      });
+    });
+  }
+
+  /**
+   * Switch mock data tab
+   */
+  switchMockTab(tabName, tabsContainer) {
+    // Update tab buttons
+    const buttons = tabsContainer.querySelectorAll('.mock-data-tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    if (tabName === 'selector') buttons[0].classList.add('active');
+    else if (tabName === 'preview') buttons[1].classList.add('active');
+    else if (tabName === 'editor') buttons[2].classList.add('active');
+
+    // Update content visibility
+    const contents = document.querySelectorAll('.mock-data-tab-content');
+    contents.forEach(content => content.classList.remove('active'));
+
+    if (tabName === 'selector') document.getElementById('mock-selector-content')?.classList.add('active');
+    else if (tabName === 'preview') document.getElementById('mock-preview-content')?.classList.add('active');
+    else if (tabName === 'editor') document.getElementById('mock-editor-content')?.classList.add('active');
   }
 
   /**
