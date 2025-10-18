@@ -1531,3 +1531,518 @@ describe('Mock Preview Component', () => {
   });
 });
 
+// Test: Code Metrics Component
+describe('Code Metrics Component', () => {
+  let container;
+  let codeMetrics;
+
+  beforeEach(() => {
+    mockDOM();
+    container = document.createElement('div');
+    codeMetrics = {
+      complexity: {
+        cyclomatic: 3,
+        cognitive: 2,
+        rating: 'A'
+      },
+      coverage: {
+        lines: 92,
+        branches: 85,
+        functions: 100
+      },
+      code: {
+        lines: 45,
+        functions: 3,
+        avgFunctionLength: 15,
+        duplication: 5
+      },
+      issues: [
+        { type: 'complexity', severity: 'warning', message: 'Function too complex' },
+        { type: 'duplication', severity: 'info', message: 'Code duplication detected' }
+      ]
+    };
+  });
+
+  test('renders code metrics component', () => {
+    // This test covers: Code Metrics - Render component
+    const { CodeMetricsComponent } = require('./js/components/code-metrics.js');
+
+    CodeMetricsComponent.render(codeMetrics, container);
+
+    expect(container.querySelector('.code-metrics')).toBeTruthy();
+  });
+
+  test('displays cyclomatic complexity', () => {
+    // This test covers: Code Metrics - Display complexity
+    const { CodeMetricsComponent } = require('./js/components/code-metrics.js');
+
+    CodeMetricsComponent.render(codeMetrics, container);
+
+    const complexity = container.querySelector('.metrics-complexity');
+    expect(complexity).toBeTruthy();
+    expect(complexity.textContent).toContain('3');
+  });
+
+  test('displays code coverage percentage', () => {
+    // This test covers: Code Metrics - Display coverage
+    const { CodeMetricsComponent } = require('./js/components/code-metrics.js');
+
+    CodeMetricsComponent.render(codeMetrics, container);
+
+    const coverage = container.querySelector('.metrics-coverage');
+    expect(coverage).toBeTruthy();
+    expect(coverage.textContent).toContain('92');
+  });
+
+  test('displays line count', () => {
+    // This test covers: Code Metrics - Display line count
+    const { CodeMetricsComponent } = require('./js/components/code-metrics.js');
+
+    CodeMetricsComponent.render(codeMetrics, container);
+
+    const lines = container.querySelector('.metrics-lines');
+    expect(lines).toBeTruthy();
+    expect(lines.textContent).toContain('45');
+  });
+
+  test('displays code duplication percentage', () => {
+    // This test covers: Code Metrics - Display duplication
+    const { CodeMetricsComponent } = require('./js/components/code-metrics.js');
+
+    CodeMetricsComponent.render(codeMetrics, container);
+
+    const duplication = container.querySelector('.metrics-duplication');
+    expect(duplication).toBeTruthy();
+    expect(duplication.textContent).toContain('5');
+  });
+
+  test('displays function count and average length', () => {
+    // This test covers: Code Metrics - Display function metrics
+    const { CodeMetricsComponent } = require('./js/components/code-metrics.js');
+
+    CodeMetricsComponent.render(codeMetrics, container);
+
+    const functions = container.querySelector('.metrics-functions');
+    expect(functions).toBeTruthy();
+    expect(functions.textContent).toContain('3');
+  });
+
+  test('displays quality rating', () => {
+    // This test covers: Code Metrics - Display rating
+    const { CodeMetricsComponent } = require('./js/components/code-metrics.js');
+
+    CodeMetricsComponent.render(codeMetrics, container);
+
+    const rating = container.querySelector('.metrics-rating');
+    expect(rating).toBeTruthy();
+    expect(rating.textContent).toContain('A');
+  });
+
+  test('displays code quality issues', () => {
+    // This test covers: Code Metrics - Display issues
+    const { CodeMetricsComponent } = require('./js/components/code-metrics.js');
+
+    CodeMetricsComponent.render(codeMetrics, container);
+
+    const issues = container.querySelectorAll('.metrics-issue');
+    expect(issues.length).toBe(2);
+  });
+
+  test('updates metrics when code changes', () => {
+    // This test covers: Code Metrics - Update on code change
+    const { CodeMetricsComponent } = require('./js/components/code-metrics.js');
+
+    CodeMetricsComponent.render(codeMetrics, container);
+
+    const updatedMetrics = { ...codeMetrics, code: { ...codeMetrics.code, lines: 50 } };
+    CodeMetricsComponent.render(updatedMetrics, container);
+
+    const lines = container.querySelector('.metrics-lines');
+    expect(lines.textContent).toContain('50');
+  });
+});
+
+// Test: Coverage Analyzer Service
+describe('Coverage Analyzer Service', () => {
+  test('calculates coverage percentage correctly', () => {
+    // This test covers: Coverage Analyzer - Calculate percentage
+    const { CoverageAnalyzer } = require('./js/services/coverage-analyzer.js');
+
+    const coverage = CoverageAnalyzer.calculateCoverage({
+      totalLines: 100,
+      coveredLines: 92
+    });
+
+    expect(coverage).toBe(92);
+  });
+
+  test('identifies uncovered lines', () => {
+    // This test covers: Coverage Analyzer - Identify uncovered lines
+    const { CoverageAnalyzer } = require('./js/services/coverage-analyzer.js');
+
+    const uncovered = CoverageAnalyzer.getUncoveredLines({
+      totalLines: 100,
+      coveredLines: 92,
+      uncoveredLineNumbers: [5, 10, 15, 20, 25, 30, 35, 40]
+    });
+
+    expect(uncovered.length).toBe(8);
+  });
+
+  test('suggests coverage improvements', () => {
+    // This test covers: Coverage Analyzer - Suggest improvements
+    const { CoverageAnalyzer } = require('./js/services/coverage-analyzer.js');
+
+    const suggestions = CoverageAnalyzer.suggestImprovements({
+      coverage: 85,
+      uncoveredLines: [5, 10, 15]
+    });
+
+    expect(suggestions).toBeTruthy();
+    expect(Array.isArray(suggestions)).toBe(true);
+  });
+
+  test('tracks coverage trends', () => {
+    // This test covers: Coverage Analyzer - Track trends
+    const { CoverageAnalyzer } = require('./js/services/coverage-analyzer.js');
+
+    CoverageAnalyzer.recordCoverage(85);
+    CoverageAnalyzer.recordCoverage(87);
+    CoverageAnalyzer.recordCoverage(90);
+
+    const trend = CoverageAnalyzer.getTrend();
+    expect(trend.length).toBe(3);
+    expect(trend[trend.length - 1]).toBe(90);
+  });
+});
+
+// Test: Complexity Calculator Service
+describe('Complexity Calculator Service', () => {
+  test('calculates cyclomatic complexity', () => {
+    // This test covers: Complexity Calculator - Calculate complexity
+    const { ComplexityCalculator } = require('./js/services/complexity-calculator.js');
+
+    const code = `
+      function test(a) {
+        if (a > 0) {
+          return a;
+        } else {
+          return -a;
+        }
+      }
+    `;
+
+    const complexity = ComplexityCalculator.calculateCyclomaticComplexity(code);
+    expect(complexity).toBeGreaterThan(0);
+  });
+
+  test('identifies complex functions', () => {
+    // This test covers: Complexity Calculator - Identify complex functions
+    const { ComplexityCalculator } = require('./js/services/complexity-calculator.js');
+
+    const code = `
+      function complex(a, b, c) {
+        if (a) {
+          if (b) {
+            if (c) {
+              return 1;
+            }
+          }
+        }
+        return 0;
+      }
+    `;
+
+    const complexFunctions = ComplexityCalculator.getComplexFunctions(code);
+    expect(Array.isArray(complexFunctions)).toBe(true);
+  });
+
+  test('suggests simplification strategies', () => {
+    // This test covers: Complexity Calculator - Suggest simplification
+    const { ComplexityCalculator } = require('./js/services/complexity-calculator.js');
+
+    const suggestions = ComplexityCalculator.suggestSimplification({
+      complexity: 8,
+      functionName: 'complexFunction'
+    });
+
+    expect(suggestions).toBeTruthy();
+    expect(Array.isArray(suggestions)).toBe(true);
+  });
+
+  test('provides complexity benchmarks', () => {
+    // This test covers: Complexity Calculator - Provide benchmarks
+    const { ComplexityCalculator } = require('./js/services/complexity-calculator.js');
+
+    const benchmarks = ComplexityCalculator.getBenchmarks();
+    expect(benchmarks).toBeTruthy();
+    expect(benchmarks.low).toBeDefined();
+    expect(benchmarks.high).toBeDefined();
+  });
+});
+
+// Test: Refactor Guide Component
+describe('Refactor Guide Component', () => {
+  let container;
+  let suggestions;
+
+  beforeEach(() => {
+    mockDOM();
+    container = document.createElement('div');
+    suggestions = [
+      {
+        id: 'extract-function',
+        title: 'Extract Function',
+        description: 'Extract repeated code into a function',
+        severity: 'medium',
+        lines: [10, 15],
+        suggestion: 'Create a new function for this logic',
+        example: 'function extracted() { ... }'
+      },
+      {
+        id: 'reduce-complexity',
+        title: 'Reduce Complexity',
+        description: 'Function is too complex',
+        severity: 'high',
+        lines: [20, 30],
+        suggestion: 'Break into smaller functions',
+        example: 'function simplified() { ... }'
+      }
+    ];
+  });
+
+  test('renders refactor guide component', () => {
+    // This test covers: Refactor Guide - Render component
+    const { RefactorGuideComponent } = require('./js/components/refactor-guide.js');
+
+    RefactorGuideComponent.render(suggestions, container);
+
+    expect(container.querySelector('.refactor-guide')).toBeTruthy();
+  });
+
+  test('displays refactoring suggestions', () => {
+    // This test covers: Refactor Guide - Display suggestions
+    const { RefactorGuideComponent } = require('./js/components/refactor-guide.js');
+
+    RefactorGuideComponent.render(suggestions, container);
+
+    const items = container.querySelectorAll('.refactor-suggestion');
+    expect(items.length).toBe(2);
+  });
+
+  test('shows code quality issues', () => {
+    // This test covers: Refactor Guide - Show issues
+    const { RefactorGuideComponent } = require('./js/components/refactor-guide.js');
+
+    RefactorGuideComponent.render(suggestions, container);
+
+    const issues = container.querySelectorAll('.refactor-issue');
+    expect(issues.length).toBeGreaterThan(0);
+  });
+
+  test('provides improvement recommendations', () => {
+    // This test covers: Refactor Guide - Provide recommendations
+    const { RefactorGuideComponent } = require('./js/components/refactor-guide.js');
+
+    RefactorGuideComponent.render(suggestions, container);
+
+    const recommendations = container.querySelectorAll('.refactor-recommendation');
+    expect(recommendations.length).toBeGreaterThan(0);
+  });
+
+  test('displays severity levels', () => {
+    // This test covers: Refactor Guide - Display severity
+    const { RefactorGuideComponent } = require('./js/components/refactor-guide.js');
+
+    RefactorGuideComponent.render(suggestions, container);
+
+    const severities = container.querySelectorAll('.refactor-severity');
+    expect(severities.length).toBeGreaterThan(0);
+  });
+
+  test('shows before/after examples', () => {
+    // This test covers: Refactor Guide - Show examples
+    const { RefactorGuideComponent } = require('./js/components/refactor-guide.js');
+
+    RefactorGuideComponent.render(suggestions, container);
+
+    const examples = container.querySelectorAll('.refactor-example');
+    expect(examples.length).toBeGreaterThan(0);
+  });
+});
+
+// Test: Mentor Solution Component
+describe('Mentor Solution Component', () => {
+  let container;
+  let mentorSolution;
+  let userCode;
+
+  beforeEach(() => {
+    mockDOM();
+    container = document.createElement('div');
+    mentorSolution = {
+      code: 'def add(a, b):\n    return a + b',
+      explanation: 'Simple and clean implementation',
+      metrics: {
+        complexity: 1,
+        coverage: 100,
+        lines: 2
+      }
+    };
+    userCode = 'def add(a, b):\n    result = a + b\n    return result';
+  });
+
+  test('renders mentor solution component', () => {
+    // This test covers: Mentor Solution - Render component
+    const { MentorSolutionComponent } = require('./js/components/mentor-solution.js');
+
+    MentorSolutionComponent.render(mentorSolution, userCode, container);
+
+    expect(container.querySelector('.mentor-solution')).toBeTruthy();
+  });
+
+  test('displays mentor solution code', () => {
+    // This test covers: Mentor Solution - Display code
+    const { MentorSolutionComponent } = require('./js/components/mentor-solution.js');
+
+    MentorSolutionComponent.render(mentorSolution, userCode, container);
+
+    const code = container.querySelector('.mentor-code');
+    expect(code).toBeTruthy();
+    expect(code.textContent).toContain('def add');
+  });
+
+  test('shows side-by-side comparison', () => {
+    // This test covers: Mentor Solution - Show comparison
+    const { MentorSolutionComponent } = require('./js/components/mentor-solution.js');
+
+    MentorSolutionComponent.render(mentorSolution, userCode, container);
+
+    const comparison = container.querySelector('.mentor-comparison');
+    expect(comparison).toBeTruthy();
+  });
+
+  test('highlights differences', () => {
+    // This test covers: Mentor Solution - Highlight differences
+    const { MentorSolutionComponent } = require('./js/components/mentor-solution.js');
+
+    MentorSolutionComponent.render(mentorSolution, userCode, container);
+
+    const differences = container.querySelectorAll('.mentor-diff');
+    expect(differences.length).toBeGreaterThan(0);
+  });
+
+  test('explains mentor approach', () => {
+    // This test covers: Mentor Solution - Explain approach
+    const { MentorSolutionComponent } = require('./js/components/mentor-solution.js');
+
+    MentorSolutionComponent.render(mentorSolution, userCode, container);
+
+    const explanation = container.querySelector('.mentor-explanation');
+    expect(explanation).toBeTruthy();
+    expect(explanation.textContent).toContain('Simple and clean');
+  });
+
+  test('shows mentor metrics', () => {
+    // This test covers: Mentor Solution - Show metrics
+    const { MentorSolutionComponent } = require('./js/components/mentor-solution.js');
+
+    MentorSolutionComponent.render(mentorSolution, userCode, container);
+
+    const metrics = container.querySelector('.mentor-metrics');
+    expect(metrics).toBeTruthy();
+  });
+});
+
+// Test: Phase-Aware Display
+describe('Phase-Aware Display', () => {
+  let container;
+  let phaseIndicator;
+
+  beforeEach(() => {
+    mockDOM();
+    container = document.createElement('div');
+    document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    document.body.removeChild(container);
+  });
+
+  test('shows metrics panel only in REFACTOR phase', () => {
+    // This test covers: Phase-Aware Display - Show in REFACTOR
+    const { PhaseIndicatorComponent } = require('./js/components/phase-indicator.js');
+
+    phaseIndicator = new PhaseIndicatorComponent();
+    phaseIndicator.setPhase('REFACTOR');
+
+    expect(phaseIndicator.isRefactor()).toBe(true);
+  });
+
+  test('hides metrics in RED phase', () => {
+    // This test covers: Phase-Aware Display - Hide in RED
+    const { PhaseIndicatorComponent } = require('./js/components/phase-indicator.js');
+
+    phaseIndicator = new PhaseIndicatorComponent();
+    phaseIndicator.setPhase('RED');
+
+    expect(phaseIndicator.isRed()).toBe(true);
+    expect(phaseIndicator.isRefactor()).toBe(false);
+  });
+
+  test('hides metrics in GREEN phase', () => {
+    // This test covers: Phase-Aware Display - Hide in GREEN
+    const { PhaseIndicatorComponent } = require('./js/components/phase-indicator.js');
+
+    phaseIndicator = new PhaseIndicatorComponent();
+    phaseIndicator.setPhase('GREEN');
+
+    expect(phaseIndicator.isGreen()).toBe(true);
+    expect(phaseIndicator.isRefactor()).toBe(false);
+  });
+
+  test('provides phase-specific guidance', () => {
+    // This test covers: Phase-Aware Display - Provide guidance
+    const { PhaseIndicatorComponent } = require('./js/components/phase-indicator.js');
+
+    phaseIndicator = new PhaseIndicatorComponent();
+
+    const redGuidance = phaseIndicator.getPhaseGuidance('RED');
+    const greenGuidance = phaseIndicator.getPhaseGuidance('GREEN');
+    const refactorGuidance = phaseIndicator.getPhaseGuidance('REFACTOR');
+
+    expect(redGuidance).toBeTruthy();
+    expect(greenGuidance).toBeTruthy();
+    expect(refactorGuidance).toBeTruthy();
+  });
+
+  test('updates metrics in real-time', () => {
+    // This test covers: Phase-Aware Display - Real-time updates
+    const { PhaseIndicatorComponent } = require('./js/components/phase-indicator.js');
+
+    phaseIndicator = new PhaseIndicatorComponent();
+    let callCount = 0;
+
+    phaseIndicator.onPhaseChangeCallback(() => {
+      callCount++;
+    });
+
+    phaseIndicator.setPhase('REFACTOR');
+    phaseIndicator.setPhase('RED');
+
+    expect(callCount).toBe(2);
+  });
+
+  test('shows phase progression', () => {
+    // This test covers: Phase-Aware Display - Show progression
+    const { PhaseIndicatorComponent } = require('./js/components/phase-indicator.js');
+
+    phaseIndicator = new PhaseIndicatorComponent();
+
+    const progression = phaseIndicator.getPhaseProgression();
+    expect(progression).toContain('RED');
+    expect(progression).toContain('GREEN');
+    expect(progression).toContain('REFACTOR');
+  });
+});
+

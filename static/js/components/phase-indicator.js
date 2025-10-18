@@ -186,6 +186,28 @@ export class PhaseIndicatorComponent {
   previousPhase() {
     this.setPhase(this.getPreviousPhase());
   }
+
+  /**
+   * Get phase-specific guidance
+   * @param {string} phase - Phase name
+   * @returns {string} Guidance text for the phase
+   */
+  getPhaseGuidance(phase) {
+    const guidance = {
+      RED: '🔴 RED Phase: Understand the requirements by reading the failing tests. What do they expect?',
+      GREEN: '🟢 GREEN Phase: Write the simplest code to make all tests pass. Focus on functionality, not perfection.',
+      REFACTOR: '🔵 REFACTOR Phase: Improve your code while keeping all tests green. Focus on clarity and efficiency.'
+    };
+    return guidance[phase] || '';
+  }
+
+  /**
+   * Get phase progression
+   * @returns {Array} Array of phases in order
+   */
+  getPhaseProgression() {
+    return [...this.phases];
+  }
 }
 
 export default PhaseIndicatorComponent;
