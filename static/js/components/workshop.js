@@ -4,6 +4,8 @@
  */
 
 import CONFIG from '../config.js';
+import TestPanelComponent from './test-panel.js';
+import TestProgressComponent from './test-progress.js';
 
 export class WorkshopComponent {
   /**
@@ -145,6 +147,50 @@ export class WorkshopComponent {
   static hideReset() {
     const btn = document.getElementById(CONFIG.ELEMENTS.RESET_BTN);
     if (btn) btn.style.display = 'none';
+  }
+
+  /**
+   * Render test panel with test cases
+   * @param {Array} tests - Array of test case objects
+   */
+  static renderTestPanel(tests) {
+    const container = document.getElementById('tests-container');
+    if (container) {
+      TestPanelComponent.render(tests, container);
+    }
+  }
+
+  /**
+   * Update test progress
+   * @param {Array} tests - Array of test case objects
+   */
+  static updateTestProgress(tests) {
+    TestProgressComponent.updateProgressBar(tests);
+  }
+
+  /**
+   * Update individual test status
+   * @param {string} testId - Test ID
+   * @param {string} status - New status (pass, fail, not_run)
+   * @param {Object} result - Test result object
+   */
+  static updateTestStatus(testId, status, result = {}) {
+    TestPanelComponent.updateTestStatus(testId, status, result);
+    const container = document.getElementById('tests-container');
+    if (container) {
+      const tests = Array.from(container.querySelectorAll('.test-case')).map(el => ({
+        id: el.dataset.testId,
+        status: el.className.match(/test-(pass|fail|not_run)/)?.[1] || 'not_run'
+      }));
+      this.updateTestProgress(tests);
+    }
+  }
+
+  /**
+   * Clear all test statuses
+   */
+  static clearTestStatuses() {
+    TestPanelComponent.clearAllStatuses();
   }
 }
 
