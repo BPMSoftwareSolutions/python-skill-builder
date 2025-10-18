@@ -8,6 +8,16 @@ import json
 import ast
 import time
 import traceback
+import sys
+import os
+
+# Add app directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Import test runner services
+from app.services.test_runner import TestRunner
+from app.services.test_executor import TestExecutor
+from app.services.test_formatter import TestFormatter
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 
@@ -372,6 +382,80 @@ def capture_execution_results(user_ns, user_code="", expected_results=None):
                 }
 
     return results
+
+@app.post("/api/workshops/<workshop_id>/run-tests")
+def run_tests(workshop_id):
+    """
+    Run tests for a workshop with user code.
+
+    JSON body:
+    {
+      "code": "...",
+      "mockSetId": "valid"  // Optional, defaults to 'valid'
+    }
+
+    Returns:
+    {
+      "ok": true,
+      "total_tests": 5,
+      "passed_tests": 4,
+      "failed_tests": 1,
+      "execution_time": 0.015,
+      "mock_set": "valid",
+      "results": [
+        {
+          "id": 1,
+          "name": "test_add_positive_numbers",
+          "status": "pass",
+          "assertion": "assertEqual(add(2, 3), 5)",
+          "expected": 5,
+          "actual": 5,
+          "error": null,
+          "execution_time": 0.001,
+          "mock_set": "valid",
+          "message": "✓ test_add_positive_numbers passed"
+        },
+        ...
+      ]
+    }
+    """
+    data = request.get_json(force=True)
+    code = data.get("code")
+    mock_set_id = data.get("mockSetId", "valid")
+
+    if not code:
+        return jsonify({"ok": False, "error": "Missing code"}), 400
+
+    try:
+        # Initialize services
+        test_runner = TestRunner()
+        test_formatter = TestFormatter()
+
+        # For now, use the existing grade endpoint logic
+        # In a full implementation, this would load workshop-specific tests
+        # and execute them with the specified mock data set
+
+        # Placeholder: return success response
+        result = {
+            "ok": True,
+            "total_tests": 0,
+            "passed_tests": 0,
+            "failed_tests": 0,
+            "execution_time": 0,
+            "mock_set": mock_set_id,
+            "results": []
+        }
+
+        return jsonify(result)
+
+    except Exception as e:
+        trace_lines = traceback.format_exc().splitlines()
+        return jsonify({
+            "ok": False,
+            "error": str(e),
+            "trace": trace_lines[-3:] if len(trace_lines) >= 3 else trace_lines
+        }), 400
+
 
 @app.post("/api/grade")
 def grade_submission():

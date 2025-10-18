@@ -3,7 +3,7 @@ Unit tests for sandbox validation
 Tests all features from features.json -> backend.sandbox
 """
 import pytest
-from app import validate_source, run_user_and_tests, SAFE_BUILTINS
+from main import validate_source, run_user_and_tests, SAFE_BUILTINS
 
 
 class TestSandboxASTValidation:
