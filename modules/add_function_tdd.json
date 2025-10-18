@@ -1,0 +1,208 @@
+{
+  "id": "add_function_tdd",
+  "title": "Add Function (TDD)",
+  "description": "Learn TDD by implementing an add function that returns the sum of two numbers",
+  "difficulty": "beginner",
+  "estimated_minutes": 15,
+  "phases": {
+    "test_suite": {
+      "id": "add_function_tests",
+      "name": "Add Function Test Suite",
+      "description": "Tests for the add function covering basic operations and edge cases",
+      "tests": [
+        {
+          "id": "test_1",
+          "name": "test_add_positive_numbers",
+          "description": "Add two positive numbers",
+          "assertion": "assertEqual(add(2, 3), 5)",
+          "assertion_type": "assertEqual",
+          "expected": 5,
+          "inputs": [2, 3],
+          "difficulty": "easy"
+        },
+        {
+          "id": "test_2",
+          "name": "test_add_negative_numbers",
+          "description": "Add two negative numbers",
+          "assertion": "assertEqual(add(-2, -3), -5)",
+          "assertion_type": "assertEqual",
+          "expected": -5,
+          "inputs": [-2, -3],
+          "difficulty": "easy"
+        },
+        {
+          "id": "test_3",
+          "name": "test_add_mixed_signs",
+          "description": "Add numbers with different signs",
+          "assertion": "assertEqual(add(5, -3), 2)",
+          "assertion_type": "assertEqual",
+          "expected": 2,
+          "inputs": [5, -3],
+          "difficulty": "medium"
+        },
+        {
+          "id": "test_4",
+          "name": "test_add_zero",
+          "description": "Add with zero",
+          "assertion": "assertEqual(add(0, 5), 5)",
+          "assertion_type": "assertEqual",
+          "expected": 5,
+          "inputs": [0, 5],
+          "difficulty": "easy"
+        },
+        {
+          "id": "test_5",
+          "name": "test_add_floats",
+          "description": "Add floating point numbers",
+          "assertion": "assertAlmostEqual(add(2.5, 3.7), 6.2)",
+          "assertion_type": "assertAlmostEqual",
+          "expected": 6.2,
+          "inputs": [2.5, 3.7],
+          "difficulty": "medium"
+        },
+        {
+          "id": "test_6",
+          "name": "test_add_large_numbers",
+          "description": "Add large numbers",
+          "assertion": "assertEqual(add(999999, 1), 1000000)",
+          "assertion_type": "assertEqual",
+          "expected": 1000000,
+          "inputs": [999999, 1],
+          "difficulty": "hard"
+        }
+      ]
+    },
+    "mock_data_sets": {
+      "valid": {
+        "id": "valid",
+        "name": "Valid Inputs",
+        "description": "Basic positive numbers",
+        "difficulty": "easy",
+        "data_points": [
+          {
+            "inputs": [2, 3],
+            "expected": 5,
+            "description": "Simple addition"
+          },
+          {
+            "inputs": [5, 10],
+            "expected": 15,
+            "description": "Larger numbers"
+          },
+          {
+            "inputs": [0, 0],
+            "expected": 0,
+            "description": "Both zeros"
+          }
+        ]
+      },
+      "edge": {
+        "id": "edge",
+        "name": "Edge Cases",
+        "description": "Zero, negatives, floats",
+        "difficulty": "medium",
+        "data_points": [
+          {
+            "inputs": [0, 5],
+            "expected": 5,
+            "description": "Zero plus number"
+          },
+          {
+            "inputs": [-2, 3],
+            "expected": 1,
+            "description": "Negative plus positive"
+          },
+          {
+            "inputs": [2.5, 1.5],
+            "expected": 4.0,
+            "description": "Floating point numbers"
+          }
+        ]
+      },
+      "stress": {
+        "id": "stress",
+        "name": "Stress Test",
+        "description": "Large numbers, performance",
+        "difficulty": "hard",
+        "data_points": [
+          {
+            "inputs": [999999, 1],
+            "expected": 1000000,
+            "description": "Large number addition"
+          },
+          {
+            "inputs": [1000000, 1000000],
+            "expected": 2000000,
+            "description": "Very large numbers"
+          }
+        ]
+      }
+    },
+    "guidance": {
+      "red": {
+        "objective": "Understand the requirements by reading the failing tests",
+        "guidance": "Read each test carefully. What do they expect? What inputs do they use? What outputs should the function return?",
+        "hints": [
+          "Look at the test name to understand what it tests",
+          "The assertion shows what the function should return",
+          "Try to understand all tests before writing code",
+          "Notice the different types of inputs: positive, negative, zero, floats"
+        ],
+        "learning_objectives": [
+          "Understand test-driven development",
+          "Learn to read and interpret test cases",
+          "Understand assertions and expected values",
+          "Recognize edge cases and special scenarios"
+        ]
+      },
+      "green": {
+        "objective": "Make all tests pass with the simplest code possible",
+        "guidance": "Write the simplest code that makes all tests pass. Don't worry about optimization or edge cases yet.",
+        "minimum_requirements": "All RED tests must pass",
+        "hints": [
+          "Start with the simplest implementation",
+          "Don't worry about edge cases yet",
+          "Focus on making tests pass",
+          "The simplest add function is just: return a + b"
+        ],
+        "success_criteria": [
+          "All tests pass",
+          "Function returns correct results for all test cases",
+          "Code is simple and straightforward"
+        ]
+      },
+      "refactor": {
+        "objective": "Improve code quality while keeping all tests green",
+        "guidance": "Keep all tests green while improving your code. Consider readability, performance, and best practices.",
+        "guidelines": [
+          "Reduce complexity",
+          "Improve readability",
+          "Remove duplication",
+          "Add type hints for clarity",
+          "Consider edge cases and error handling"
+        ],
+        "code_metrics": {
+          "target_complexity": 1,
+          "target_coverage": 100,
+          "target_duplication": 0,
+          "target_lines": 5
+        },
+        "mentor_solution": "def add(a: int | float, b: int | float) -> int | float:\n    \"\"\"Return the sum of two numbers.\"\"\"\n    return a + b",
+        "patterns": [
+          "Type hints for clarity",
+          "Docstrings for documentation",
+          "Simple, readable code",
+          "No unnecessary complexity"
+        ]
+      }
+    }
+  },
+  "prompt": "Implement an add function that returns the sum of two numbers",
+  "starter_code": "def add(a, b):\n    pass\n",
+  "hints": [
+    "Hint 1: The function should take two parameters",
+    "Hint 2: Return the sum of the two parameters",
+    "Hint 3: Python's + operator works for numbers"
+  ]
+}
+
