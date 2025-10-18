@@ -22,6 +22,27 @@ export class ProgressState {
         scores: {},
         lastSeenAt: null,
         workshopCount: workshopCount,
+        // NEW: Achievement tracking
+        achievements: [],
+        achievementUnlockedAt: {},
+        // NEW: Streak tracking
+        currentStreak: 0,
+        longestStreak: 0,
+        lastCompletedAt: null,
+        // NEW: Statistics
+        stats: {
+          redPhasesCompleted: 0,
+          greenPhasesCompleted: 0,
+          refactorPhasesCompleted: 0,
+          testsPassed: 0,
+          perfectScores: 0,
+          averageCoverage: 0,
+          totalPoints: 0,
+          totalTestsAnalyzed: 0,
+          allTestsExpanded: false,
+          complexityReduced: 0,
+          perfectMetrics: false,
+        },
       };
     }
   }
@@ -147,6 +168,90 @@ export class ProgressState {
   resetAll() {
     this.progress = {};
     this.save();
+  }
+
+  /**
+   * Unlock an achievement for a module
+   * @param {string} moduleId - Module ID
+   * @param {string} achievementId - Achievement ID
+   */
+  unlockAchievement(moduleId, achievementId) {
+    this.initializeModule(moduleId, 0);
+    const moduleProgress = this.progress[moduleId];
+
+    if (!moduleProgress.achievements.includes(achievementId)) {
+      moduleProgress.achievements.push(achievementId);
+      moduleProgress.achievementUnlockedAt[achievementId] = new Date().toISOString();
+      this.save();
+    }
+  }
+
+  /**
+   * Get unlocked achievements for a module
+   * @param {string} moduleId - Module ID
+   * @returns {Array} Array of unlocked achievement IDs
+   */
+  getUnlockedAchievements(moduleId) {
+    const moduleProgress = this.getModuleProgress(moduleId);
+    return moduleProgress.achievements || [];
+  }
+
+  /**
+   * Update module statistics
+   * @param {string} moduleId - Module ID
+   * @param {Object} statsUpdate - Statistics to update
+   */
+  updateStats(moduleId, statsUpdate) {
+    this.initializeModule(moduleId, 0);
+    const moduleProgress = this.progress[moduleId];
+
+    if (!moduleProgress.stats) {
+      moduleProgress.stats = {};
+    }
+
+    Object.assign(moduleProgress.stats, statsUpdate);
+    this.save();
+  }
+
+  /**
+   * Get statistics for a module
+   * @param {string} moduleId - Module ID
+   * @returns {Object} Statistics object
+   */
+  getStats(moduleId) {
+    const moduleProgress = this.getModuleProgress(moduleId);
+    return moduleProgress.stats || {};
+  }
+
+  /**
+   * Update streak for a module
+   * @param {string} moduleId - Module ID
+   * @param {number} streak - Current streak count
+   */
+  updateStreak(moduleId, streak) {
+    this.initializeModule(moduleId, 0);
+    const moduleProgress = this.progress[moduleId];
+
+    moduleProgress.currentStreak = streak;
+    if (streak > (moduleProgress.longestStreak || 0)) {
+      moduleProgress.longestStreak = streak;
+    }
+    moduleProgress.lastCompletedAt = new Date().toISOString();
+    this.save();
+  }
+
+  /**
+   * Get streak information for a module
+   * @param {string} moduleId - Module ID
+   * @returns {Object} Streak information
+   */
+  getStreakInfo(moduleId) {
+    const moduleProgress = this.getModuleProgress(moduleId);
+    return {
+      current: moduleProgress.currentStreak || 0,
+      longest: moduleProgress.longestStreak || 0,
+      lastCompletedAt: moduleProgress.lastCompletedAt || null,
+    };
   }
 }
 
