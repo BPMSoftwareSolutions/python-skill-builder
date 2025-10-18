@@ -1201,3 +1201,333 @@ describe('Assertion Display Component', () => {
   });
 });
 
+// Test: Mock Manager Service
+describe('Mock Manager Service', () => {
+  let mockManager;
+
+  beforeEach(() => {
+    localStorage.clear();
+    mockManager = require('./js/services/mock-manager.js').default;
+    mockManager.customMockSets = {};
+  });
+
+  test('initializes with default mock sets', () => {
+    // This test covers: Mock Manager - Initialize default mock sets
+    const mockSets = mockManager.getDefaultMockSets();
+
+    expect(mockSets.valid).toBeTruthy();
+    expect(mockSets.edge).toBeTruthy();
+    expect(mockSets.stress).toBeTruthy();
+    expect(mockSets.valid.dataPoints.length).toBeGreaterThan(0);
+  });
+
+  test('initializes mock data from workshop', () => {
+    // This test covers: Mock Manager - Initialize from workshop
+    const workshop = {
+      mockData: {
+        custom: {
+          id: 'custom',
+          name: 'Custom Set',
+          dataPoints: [{ inputs: [1, 2], expected: 3 }]
+        }
+      }
+    };
+
+    mockManager.initializeMockData(workshop);
+    const mockSet = mockManager.getMockSet('custom');
+
+    expect(mockSet).toBeTruthy();
+    expect(mockSet.name).toBe('Custom Set');
+  });
+
+  test('switches between mock sets', () => {
+    // This test covers: Mock Manager - Switch mock sets
+    mockManager.initializeMockData({});
+
+    expect(mockManager.getCurrentMockSetId()).toBe('valid');
+
+    mockManager.switchMockSet('edge');
+    expect(mockManager.getCurrentMockSetId()).toBe('edge');
+
+    mockManager.switchMockSet('stress');
+    expect(mockManager.getCurrentMockSetId()).toBe('stress');
+  });
+
+  test('returns current mock set', () => {
+    // This test covers: Mock Manager - Get current mock set
+    mockManager.initializeMockData({});
+
+    const mockSet = mockManager.getCurrentMockSet();
+    expect(mockSet).toBeTruthy();
+    expect(mockSet.id).toBe('valid');
+    expect(mockSet.dataPoints).toBeTruthy();
+  });
+
+  test('validates mock set structure', () => {
+    // This test covers: Mock Manager - Validate mock set
+    const validMockSet = {
+      id: 'test',
+      name: 'Test Set',
+      dataPoints: [{ inputs: [1], expected: 1 }]
+    };
+
+    const result = mockManager.validateMockSet(validMockSet);
+    expect(result.valid).toBe(true);
+    expect(result.errors.length).toBe(0);
+  });
+
+  test('rejects invalid mock set', () => {
+    // This test covers: Mock Manager - Reject invalid mock set
+    const invalidMockSet = {
+      id: 'test',
+      // Missing name
+      dataPoints: []
+    };
+
+    const result = mockManager.validateMockSet(invalidMockSet);
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
+  });
+
+  test('creates custom mock set', () => {
+    // This test covers: Mock Manager - Create custom mock set
+    const customMockSet = {
+      id: 'custom_test',
+      name: 'Custom Test',
+      dataPoints: [{ inputs: [5, 5], expected: 10 }]
+    };
+
+    const result = mockManager.createCustomMockSet(customMockSet);
+    expect(result.success).toBe(true);
+
+    const retrieved = mockManager.getMockSet('custom_test');
+    expect(retrieved).toBeTruthy();
+    expect(retrieved.name).toBe('Custom Test');
+  });
+
+  test('deletes custom mock set', () => {
+    // This test covers: Mock Manager - Delete custom mock set
+    const customMockSet = {
+      id: 'custom_delete',
+      name: 'To Delete',
+      dataPoints: [{ inputs: [1], expected: 1 }]
+    };
+
+    mockManager.createCustomMockSet(customMockSet);
+    expect(mockManager.getMockSet('custom_delete')).toBeTruthy();
+
+    mockManager.deleteCustomMockSet('custom_delete');
+    expect(mockManager.getMockSet('custom_delete')).toBeFalsy();
+  });
+
+  test('exports mock set as JSON', () => {
+    // This test covers: Mock Manager - Export mock set
+    mockManager.initializeMockData({});
+
+    const json = mockManager.exportMockSet('valid');
+    expect(json).toBeTruthy();
+
+    const parsed = JSON.parse(json);
+    expect(parsed.id).toBe('valid');
+    expect(parsed.dataPoints).toBeTruthy();
+  });
+
+  test('imports mock set from JSON', () => {
+    // This test covers: Mock Manager - Import mock set
+    const mockSetJson = JSON.stringify({
+      id: 'imported',
+      name: 'Imported Set',
+      dataPoints: [{ inputs: [1, 1], expected: 2 }]
+    });
+
+    const result = mockManager.importMockSet(mockSetJson);
+    expect(result.success).toBe(true);
+
+    const imported = mockManager.getMockSet('imported');
+    expect(imported).toBeTruthy();
+    expect(imported.name).toBe('Imported Set');
+  });
+
+  test('gets mock set statistics', () => {
+    // This test covers: Mock Manager - Get mock set stats
+    mockManager.initializeMockData({});
+
+    const stats = mockManager.getMockSetStats('valid');
+    expect(stats).toBeTruthy();
+    expect(stats.id).toBe('valid');
+    expect(stats.dataPointCount).toBeGreaterThan(0);
+    expect(stats.isCustom).toBe(false);
+  });
+
+  test('persists custom mock sets to localStorage', () => {
+    // This test covers: Mock Manager - Persist to localStorage
+    const customMockSet = {
+      id: 'persist_test',
+      name: 'Persist Test',
+      dataPoints: [{ inputs: [1], expected: 1 }]
+    };
+
+    mockManager.createCustomMockSet(customMockSet);
+
+    const stored = localStorage.getItem('customMockSets');
+    expect(stored).toBeTruthy();
+
+    const parsed = JSON.parse(stored);
+    expect(parsed.persist_test).toBeTruthy();
+  });
+
+  test('loads custom mock sets from localStorage', () => {
+    // This test covers: Mock Manager - Load from localStorage
+    const mockSetData = {
+      loaded_test: {
+        id: 'loaded_test',
+        name: 'Loaded Test',
+        dataPoints: [{ inputs: [1], expected: 1 }]
+      }
+    };
+
+    localStorage.setItem('customMockSets', JSON.stringify(mockSetData));
+
+    const newManager = require('./js/services/mock-manager.js').default;
+    newManager.loadCustomMockSets();
+
+    const loaded = newManager.getMockSet('loaded_test');
+    expect(loaded).toBeTruthy();
+    expect(loaded.name).toBe('Loaded Test');
+  });
+});
+
+// Test: Mock Selector Component
+describe('Mock Selector Component', () => {
+  let mockManager;
+  let container;
+
+  beforeEach(() => {
+    mockDOM();
+    container = document.createElement('div');
+    mockManager = require('./js/services/mock-manager.js').default;
+    mockManager.initializeMockData({});
+  });
+
+  test('renders mock selector with all sets', () => {
+    // This test covers: Mock Selector - Render selector
+    const { MockSelectorComponent } = require('./js/components/mock-selector.js');
+
+    MockSelectorComponent.render(mockManager, container);
+
+    const radioInputs = container.querySelectorAll('.mock-selector-input');
+    expect(radioInputs.length).toBeGreaterThan(0);
+  });
+
+  test('displays mock set names and descriptions', () => {
+    // This test covers: Mock Selector - Display mock set info
+    const { MockSelectorComponent } = require('./js/components/mock-selector.js');
+
+    MockSelectorComponent.render(mockManager, container);
+
+    const names = container.querySelectorAll('.mock-selector-name');
+    expect(names.length).toBeGreaterThan(0);
+    expect(names[0].textContent).toBeTruthy();
+  });
+
+  test('shows data point count for each set', () => {
+    // This test covers: Mock Selector - Show data point count
+    const { MockSelectorComponent } = require('./js/components/mock-selector.js');
+
+    MockSelectorComponent.render(mockManager, container);
+
+    const counts = container.querySelectorAll('.mock-selector-count');
+    expect(counts.length).toBeGreaterThan(0);
+    expect(counts[0].textContent).toContain('data points');
+  });
+
+  test('selects mock set on radio button change', () => {
+    // This test covers: Mock Selector - Select mock set
+    const { MockSelectorComponent } = require('./js/components/mock-selector.js');
+
+    MockSelectorComponent.render(mockManager, container);
+
+    const radioInputs = container.querySelectorAll('.mock-selector-input');
+    if (radioInputs.length > 1) {
+      radioInputs[1].click();
+      expect(mockManager.getCurrentMockSetId()).toBe(radioInputs[1].value);
+    }
+  });
+
+  test('highlights active mock set', () => {
+    // This test covers: Mock Selector - Highlight active set
+    const { MockSelectorComponent } = require('./js/components/mock-selector.js');
+
+    MockSelectorComponent.render(mockManager, container);
+
+    const checkedInput = container.querySelector('.mock-selector-input:checked');
+    expect(checkedInput).toBeTruthy();
+    expect(checkedInput.value).toBe('valid');
+  });
+});
+
+// Test: Mock Preview Component
+describe('Mock Preview Component', () => {
+  let container;
+  let mockSet;
+
+  beforeEach(() => {
+    mockDOM();
+    container = document.createElement('div');
+    mockSet = {
+      id: 'test',
+      name: 'Test Set',
+      dataPoints: [
+        { inputs: [2, 3], expected: 5 },
+        { inputs: [5, 10], expected: 15 }
+      ]
+    };
+  });
+
+  test('renders mock preview with data points', () => {
+    // This test covers: Mock Preview - Render preview
+    const { MockPreviewComponent } = require('./js/components/mock-preview.js');
+
+    MockPreviewComponent.render(mockSet, container);
+
+    const items = container.querySelectorAll('.mock-preview-item');
+    expect(items.length).toBe(2);
+  });
+
+  test('displays mock set name and count', () => {
+    // This test covers: Mock Preview - Display mock set info
+    const { MockPreviewComponent } = require('./js/components/mock-preview.js');
+
+    MockPreviewComponent.render(mockSet, container);
+
+    const title = container.querySelector('.mock-preview-title');
+    const count = container.querySelector('.mock-preview-count');
+
+    expect(title.textContent).toContain('Test Set');
+    expect(count.textContent).toContain('2 test cases');
+  });
+
+  test('formats inputs correctly', () => {
+    // This test covers: Mock Preview - Format inputs
+    const { MockPreviewComponent } = require('./js/components/mock-preview.js');
+
+    const formatted = MockPreviewComponent.formatInputs([2, 3]);
+    expect(formatted).toContain('2');
+    expect(formatted).toContain('3');
+  });
+
+  test('expands and collapses data point details', () => {
+    // This test covers: Mock Preview - Toggle details
+    const { MockPreviewComponent } = require('./js/components/mock-preview.js');
+
+    MockPreviewComponent.render(mockSet, container);
+
+    const header = container.querySelector('.mock-preview-item-header');
+    const details = container.querySelector('.mock-preview-item-details');
+
+    expect(details.classList.contains('hidden')).toBe(true);
+    header.click();
+    expect(details.classList.contains('hidden')).toBe(false);
+  });
+});
+
