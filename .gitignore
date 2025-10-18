@@ -52,3 +52,4 @@ build/
 *.egg-info/
 .eggs/
 
+/.vs
