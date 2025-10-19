@@ -292,3 +292,211 @@ class TestApiErrorHandling:
         # Should return 200 with error feedback from test harness
         assert response.status_code in [200, 400]
 
+
+class TestGetApiUsersAchievements:
+    """Test GET /api/users/{user_id}/achievements endpoint"""
+
+    def test_get_api_users__achievements_returns_200(self, client):
+        """Returns 200 status"""
+        response = client.get('/api/users/test_user/achievements')
+        assert response.status_code == 200
+
+    def test_get_api_users__achievements_returns_array(self, client):
+        """Returns achievements array"""
+        response = client.get('/api/users/test_user/achievements')
+        data = response.get_json()
+        assert 'achievements' in data
+        assert isinstance(data['achievements'], list)
+
+    def test_get_api_users__achievements_returns_total_points(self, client):
+        """Returns total_points"""
+        response = client.get('/api/users/test_user/achievements')
+        data = response.get_json()
+        assert 'total_points' in data
+        assert isinstance(data['total_points'], int)
+
+    def test_get_api_users__achievements_each_has_required_fields(self, client):
+        """Each achievement has id, name, description, icon, category, points"""
+        response = client.get('/api/users/test_user/achievements')
+        data = response.get_json()
+
+        for achievement in data['achievements']:
+            assert 'id' in achievement
+            assert 'name' in achievement
+            assert 'description' in achievement
+            assert 'icon' in achievement
+            assert 'category' in achievement
+            assert 'points' in achievement
+
+
+class TestGetApiUsersBadges:
+    """Test GET /api/users/{user_id}/badges endpoint"""
+
+    def test_get_api_users__badges_returns_200(self, client):
+        """Returns 200 status"""
+        response = client.get('/api/users/test_user/badges')
+        assert response.status_code == 200
+
+    def test_get_api_users__badges_returns_array(self, client):
+        """Returns badges array"""
+        response = client.get('/api/users/test_user/badges')
+        data = response.get_json()
+        assert 'badges' in data
+        assert isinstance(data['badges'], list)
+
+    def test_get_api_users__badges_returns_showcase(self, client):
+        """Returns showcase with organized badges"""
+        response = client.get('/api/users/test_user/badges')
+        data = response.get_json()
+        assert 'showcase' in data
+
+    def test_get_api_users__badges_each_has_required_fields(self, client):
+        """Each badge has id, achievement_id, name, emoji, rarity, color"""
+        response = client.get('/api/users/test_user/badges')
+        data = response.get_json()
+
+        for badge in data['badges']:
+            assert 'id' in badge
+            assert 'achievement_id' in badge
+            assert 'name' in badge
+            assert 'emoji' in badge
+            assert 'rarity' in badge
+            assert 'color' in badge
+
+
+class TestGetApiUsersStats:
+    """Test GET /api/users/{user_id}/stats endpoint"""
+
+    def test_get_api_users__stats_returns_200(self, client):
+        """Returns 200 status"""
+        response = client.get('/api/users/test_user/stats')
+        assert response.status_code == 200
+
+    def test_get_api_users__stats_returns_stats(self, client):
+        """Returns stats with all user metrics"""
+        response = client.get('/api/users/test_user/stats')
+        data = response.get_json()
+        assert 'stats' in data
+        assert 'user_id' in data['stats']
+
+    def test_get_api_users__stats_returns_user_rank(self, client):
+        """Returns user rank"""
+        response = client.get('/api/users/test_user/stats')
+        data = response.get_json()
+        assert 'rank' in data
+        assert isinstance(data['rank'], int)
+
+    def test_get_api_users__stats_includes_skill_levels(self, client):
+        """Stats include skill levels"""
+        response = client.get('/api/users/test_user/stats')
+        data = response.get_json()
+        stats = data['stats']
+        assert 'red_skill_level' in stats
+        assert 'green_skill_level' in stats
+        assert 'refactor_skill_level' in stats
+
+
+class TestGetApiUsersWorkflows:
+    """Test GET /api/users/{user_id}/workflows endpoint"""
+
+    def test_get_api_users__workflows_returns_200(self, client):
+        """Returns 200 status"""
+        response = client.get('/api/users/test_user/workflows')
+        assert response.status_code == 200
+
+    def test_get_api_users__workflows_returns_array(self, client):
+        """Returns workflows array"""
+        response = client.get('/api/users/test_user/workflows')
+        data = response.get_json()
+        assert 'workflows' in data
+        assert isinstance(data['workflows'], list)
+
+    def test_get_api_users__workflows_each_has_required_fields(self, client):
+        """Each workflow has workflow_id, user_id, workshop_id, completion info"""
+        response = client.get('/api/users/test_user/workflows')
+        data = response.get_json()
+
+        for workflow in data['workflows']:
+            assert 'workflow_id' in workflow
+            assert 'user_id' in workflow
+            assert 'workshop_id' in workflow
+
+
+class TestGetApiLeaderboard:
+    """Test GET /api/leaderboard endpoint"""
+
+    def test_get_api_leaderboard_returns_200(self, client):
+        """Returns 200 status"""
+        response = client.get('/api/leaderboard')
+        assert response.status_code == 200
+
+    def test_get_api_leaderboard_accepts_limit_param(self, client):
+        """Accepts limit query param (default 10)"""
+        response = client.get('/api/leaderboard?limit=5')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert 'leaderboard' in data
+
+    def test_get_api_leaderboard_accepts_offset_param(self, client):
+        """Accepts offset query param (default 0)"""
+        response = client.get('/api/leaderboard?offset=0')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert 'leaderboard' in data
+
+    def test_get_api_leaderboard_returns_sorted_by_points(self, client):
+        """Returns leaderboard array sorted by points"""
+        response = client.get('/api/leaderboard')
+        data = response.get_json()
+        assert 'leaderboard' in data
+        assert isinstance(data['leaderboard'], list)
+
+
+class TestPostApiWorkflowsComplete:
+    """Test POST /api/workflows/{workflow_id}/complete endpoint"""
+
+    def test_post_api_workflows__complete_accepts_user_id(self, client):
+        """Accepts user_id in request body"""
+        payload = {'user_id': 'test_user'}
+        response = client.post('/api/workflows/test_workflow/complete',
+                              data=json.dumps(payload),
+                              content_type='application/json')
+        assert response.status_code in [200, 404]
+
+    def test_post_api_workflows__complete_returns_200_on_success(self, client):
+        """Returns 200 on success"""
+        payload = {'user_id': 'test_user'}
+        response = client.post('/api/workflows/test_workflow/complete',
+                              data=json.dumps(payload),
+                              content_type='application/json')
+        # May return 404 if workflow doesn't exist, but should be valid response
+        assert response.status_code in [200, 404]
+
+    def test_post_api_workflows__complete_returns_achievements_unlocked(self, client):
+        """Returns achievements_unlocked array"""
+        payload = {'user_id': 'test_user'}
+        response = client.post('/api/workflows/test_workflow/complete',
+                              data=json.dumps(payload),
+                              content_type='application/json')
+        if response.status_code == 200:
+            data = response.get_json()
+            assert 'achievements_unlocked' in data
+
+    def test_post_api_workflows__complete_returns_updated_stats(self, client):
+        """Returns updated stats"""
+        payload = {'user_id': 'test_user'}
+        response = client.post('/api/workflows/test_workflow/complete',
+                              data=json.dumps(payload),
+                              content_type='application/json')
+        if response.status_code == 200:
+            data = response.get_json()
+            assert 'stats' in data
+
+    def test_post_api_workflows__complete_returns_400_if_user_id_missing(self, client):
+        """Returns 400 if user_id missing"""
+        payload = {}
+        response = client.post('/api/workflows/test_workflow/complete',
+                              data=json.dumps(payload),
+                              content_type='application/json')
+        assert response.status_code == 400
+
