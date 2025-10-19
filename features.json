@@ -4,7 +4,7 @@
     "version": "1.3.0",
     "lastUpdated": "2025-10-19",
     "purpose": "Feature inventory for test suite generation and regression prevention",
-    "relatedIssues": ["#19", "#20", "#24", "#26", "#31", "#33", "#34", "#36", "#38"]
+    "relatedIssues": ["#19", "#20", "#21", "#24", "#26", "#31", "#33", "#34", "#36", "#38"]
   },
   "features": {
     "backend": {
@@ -244,6 +244,58 @@
               "Delete workflow state files",
               "List all workflows",
               "Check workflow existence"
+            ]
+          }
+        ]
+      },
+      "tddWorkflow": {
+        "description": "TDD workflow schema and step-by-step guidance system",
+        "features": [
+          {
+            "name": "TDD workflow schema",
+            "testCases": [
+              "TDDWorkflowDefinition with feature_description",
+              "StepContent with objective, instruction, requirements",
+              "StepContent with starter_code, example_code, hints",
+              "StepContent with success_criteria and error_messages",
+              "Support for 6 TDD steps (RED, GREEN, REFACTOR phases)",
+              "Serialization to/from dictionary",
+              "Backward compatibility with existing workshops"
+            ]
+          },
+          {
+            "name": "Hints analyzer service",
+            "testCases": [
+              "Get hints for specific step",
+              "Progressive hint reveals (levels 1-4)",
+              "Error-based hint suggestions",
+              "Get example code for step",
+              "Get solution code for step",
+              "Get starter code for step",
+              "Get step requirements checklist",
+              "Get success criteria for step",
+              "Get step objective and instruction"
+            ]
+          },
+          {
+            "name": "Error message generator",
+            "testCases": [
+              "Generate STEP 1 (RED) error messages",
+              "Generate STEP 3 (GREEN) error messages",
+              "Generate STEP 5 (REFACTOR) error messages",
+              "Error message format with type, code, message, hint",
+              "Support for current/expected value display",
+              "Generic error message generation"
+            ]
+          },
+          {
+            "name": "TDD workflow validation",
+            "testCases": [
+              "Validate TDD workflow structure",
+              "Validate step content structure",
+              "Check required fields (feature_description, step_1)",
+              "Validate optional steps",
+              "Type checking for requirements, hints, error_messages"
             ]
           }
         ]

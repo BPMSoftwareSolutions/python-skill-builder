@@ -197,6 +197,161 @@
       }
     }
   },
+  "tdd_workflow": {
+    "feature_description": "add(a, b) - Add two numbers and return the sum",
+    "step_1_red_write_test": {
+      "objective": "Write a test that currently fails",
+      "instruction": "Write a test that calls add(2, 3) and asserts the result is 5",
+      "requirements": [
+        "Function name starts with test_",
+        "Calls add(2, 3)",
+        "Has an assertion: assert ... == 5",
+        "Test must fail (add() doesn't exist yet)"
+      ],
+      "starter_code": "def test_():\n    pass",
+      "example_code": "def test_add_positive_numbers():\n    result = add(2, 3)\n    assert result == 5",
+      "hints": [
+        "Use assert to check the result",
+        "The test should fail because add() isn't implemented",
+        "Follow naming convention: test_<function>_<scenario>"
+      ],
+      "success_criteria": [
+        "Test name starts with 'test_'",
+        "Test calls add(2, 3)",
+        "Test has an assertion",
+        "Test fails when executed"
+      ],
+      "error_messages": {
+        "TEST_NAME_INVALID": "Test name must start with 'test_'. Use naming convention: test_<function>_<scenario>",
+        "NO_ASSERTIONS": "No assertions found. Use 'assert' to check the result.",
+        "TEST_PASSED": "Test passed, but it should fail! The add() function doesn't exist yet."
+      }
+    },
+    "step_2_red_validation": {
+      "objective": "Validate your test is correct",
+      "instruction": "The system will check that your test is properly formatted and fails as expected",
+      "requirements": [
+        "Test syntax is valid",
+        "Test fails when executed",
+        "Test has proper assertions"
+      ],
+      "starter_code": "",
+      "example_code": "",
+      "hints": [
+        "If your test passes, the add() function must already exist",
+        "Make sure you're testing the right thing",
+        "Check your assertion is correct"
+      ],
+      "success_criteria": [
+        "Test syntax is valid",
+        "Test fails (as expected)"
+      ],
+      "error_messages": {
+        "SYNTAX_ERROR": "Your test has a syntax error. Check your Python code.",
+        "TEST_PASSED": "Your test passed, but it should fail! The add() function doesn't exist yet."
+      }
+    },
+    "step_3_green_write_code": {
+      "objective": "Write minimal code to pass your test",
+      "instruction": "Implement add() to make your test pass",
+      "requirements": [
+        "Function named add()",
+        "Accepts two parameters",
+        "Returns sum of parameters",
+        "User's test passes"
+      ],
+      "starter_code": "def add(a, b):\n    pass",
+      "example_code": "def add(a, b):\n    return a + b",
+      "hints": [
+        "Start simple - don't over-engineer",
+        "Your test expects add(2, 3) to return 5",
+        "Minimum code wins in GREEN phase"
+      ],
+      "success_criteria": [
+        "Function named add()",
+        "Accepts two parameters",
+        "User's test passes"
+      ],
+      "error_messages": {
+        "FUNCTION_NOT_FOUND": "Function 'add' not defined. Create a function called add(a, b).",
+        "TEST_FAILED": "Your test failed. Check the error message and adjust your implementation."
+      }
+    },
+    "step_4_green_validation": {
+      "objective": "Validate your code passes the test",
+      "instruction": "The system will check that your code passes the test",
+      "requirements": [
+        "Code syntax is valid",
+        "Test passes with your code"
+      ],
+      "starter_code": "",
+      "example_code": "",
+      "hints": [
+        "If the test fails, check the error message",
+        "Make sure your function returns the right value",
+        "Check your function signature matches what the test expects"
+      ],
+      "success_criteria": [
+        "Code syntax is valid",
+        "Test passes"
+      ],
+      "error_messages": {
+        "SYNTAX_ERROR": "Your code has a syntax error. Check your Python code.",
+        "TEST_FAILED": "Your test failed. Check the error message and adjust your implementation."
+      }
+    },
+    "step_5_refactor_improve": {
+      "objective": "Improve code quality while keeping test green",
+      "instruction": "Refactor add() to be more professional",
+      "requirements": [
+        "Test still passes",
+        "Add type hints",
+        "Add docstring",
+        "Code complexity unchanged or improved"
+      ],
+      "example_code": "def add(a: int, b: int) -> int:\n    \"\"\"Add two integers and return the sum.\"\"\"\n    return a + b",
+      "hints": [
+        "Type hints make code clearer",
+        "A docstring explains what the function does",
+        "Refactoring improves style, not functionality"
+      ],
+      "success_criteria": [
+        "Test still passes",
+        "Added type hints",
+        "Added docstring",
+        "Code quality improved"
+      ],
+      "error_messages": {
+        "TEST_FAILED": "Test failed after refactoring. Keep the functionality the same!",
+        "NO_IMPROVEMENT": "Code not improved. Try adding type hints or a docstring."
+      }
+    },
+    "step_6_refactor_validation": {
+      "objective": "Validate your refactored code",
+      "instruction": "The system will check that your code is improved and tests still pass",
+      "requirements": [
+        "Code syntax is valid",
+        "Test passes with refactored code",
+        "Code quality improved"
+      ],
+      "starter_code": "",
+      "example_code": "",
+      "hints": [
+        "Type hints and docstrings improve code quality",
+        "Make sure the test still passes",
+        "Refactoring should not change functionality"
+      ],
+      "success_criteria": [
+        "Code syntax is valid",
+        "Test passes",
+        "Code quality improved"
+      ],
+      "error_messages": {
+        "SYNTAX_ERROR": "Your refactored code has a syntax error.",
+        "TEST_FAILED": "Test failed after refactoring. Keep the functionality the same!"
+      }
+    }
+  },
   "prompt": "Implement an add function that returns the sum of two numbers",
   "starter_code": "def add(a, b):\n    pass\n",
   "hints": [
