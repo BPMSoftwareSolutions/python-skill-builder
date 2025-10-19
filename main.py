@@ -18,6 +18,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from app.services.test_runner import TestRunner
 from app.services.test_executor import TestExecutor
 from app.services.test_formatter import TestFormatter
+from app.services.workflow_state import TDDWorkflowState
+from app.services.step_validator import StepValidator
+from app.services.workflow_storage import WorkflowStorage
+from app.services.code_metrics import CodeMetrics
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 
@@ -533,6 +537,238 @@ def grade_submission():
             "error": str(e),
             "trace": trace_lines[-3:] if len(trace_lines) >= 3 else trace_lines
         }), 400
+
+# ------- TDD Workflow API -------
+workflow_storage = WorkflowStorage()
+step_validator = StepValidator()
+code_metrics = CodeMetrics()
+
+@app.post("/api/workshops/<workshop_id>/workflow/start")
+def start_workflow(workshop_id):
+    """
+    Initialize a new TDD workflow for a workshop.
+
+    Returns:
+        {
+            "workflow_id": str,
+            "current_step": int,
+            "steps_status": List[Dict]
+        }
+    """
+    try:
+        # Create new workflow
+        workflow = TDDWorkflowState(workshop_id)
+        workflow_id = f"{workshop_id}_{int(time.time() * 1000)}"
+
+        # Save workflow
+        workflow_storage.save_workflow(workflow_id, workflow)
+
+        return jsonify({
+            "ok": True,
+            "workflow_id": workflow_id,
+            "current_step": workflow.get_current_step(),
+            "steps_status": workflow.get_all_steps_status()
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.get("/api/workshops/<workshop_id>/workflow/<workflow_id>")
+def get_workflow(workshop_id, workflow_id):
+    """
+    Get current workflow state.
+
+    Returns:
+        {
+            "current_step": int,
+            "steps_status": List[Dict],
+            "code_per_step": Dict
+        }
+    """
+    try:
+        workflow = workflow_storage.load_workflow(workflow_id)
+        if not workflow:
+            return jsonify({"ok": False, "error": "Workflow not found"}), 404
+
+        code_per_step = {
+            i: workflow.get_step_code(i)
+            for i in range(1, 7)
+        }
+
+        return jsonify({
+            "ok": True,
+            "current_step": workflow.get_current_step(),
+            "steps_status": workflow.get_all_steps_status(),
+            "code_per_step": code_per_step
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.post("/api/workshops/<workshop_id>/workflow/<workflow_id>/validate-step")
+def validate_step(workshop_id, workflow_id):
+    """
+    Validate current step.
+
+    Body:
+        {
+            "step": int,
+            "code": str,
+            "test_code": str (optional, for step 3 and 5)
+        }
+
+    Returns:
+        {
+            "valid": bool,
+            "errors": List[str],
+            "warnings": List[str],
+            "can_advance": bool,
+            "validation_result": Dict
+        }
+    """
+    try:
+        data = request.get_json()
+        step = data.get("step")
+        code = data.get("code", "")
+        test_code = data.get("test_code", "")
+
+        workflow = workflow_storage.load_workflow(workflow_id)
+        if not workflow:
+            return jsonify({"ok": False, "error": "Workflow not found"}), 404
+
+        # Store code
+        workflow.set_step_code(step, code)
+
+        # Validate based on step
+        if step == 1:
+            validation_result = step_validator.validate_step_1(code, workshop_id)
+        elif step == 3:
+            validation_result = step_validator.validate_step_3(code, test_code)
+        elif step == 5:
+            previous_code = workflow.get_step_code(3)
+            validation_result = step_validator.validate_step_5(code, test_code, previous_code)
+        else:
+            return jsonify({"ok": False, "error": "Invalid step"}), 400
+
+        # Mark step complete if valid
+        if validation_result.get("valid"):
+            workflow.mark_step_complete(step, validation_result)
+
+        # Save workflow
+        workflow_storage.save_workflow(workflow_id, workflow)
+
+        return jsonify({
+            "ok": True,
+            "valid": validation_result.get("valid", False),
+            "errors": validation_result.get("errors", []),
+            "warnings": validation_result.get("warnings", []),
+            "can_advance": workflow.can_advance_to_next_step(),
+            "validation_result": validation_result
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.post("/api/workshops/<workshop_id>/workflow/<workflow_id>/advance")
+def advance_workflow(workshop_id, workflow_id):
+    """
+    Advance to next step.
+
+    Returns:
+        {
+            "current_step": int,
+            "step_status": Dict
+        }
+    """
+    try:
+        workflow = workflow_storage.load_workflow(workflow_id)
+        if not workflow:
+            return jsonify({"ok": False, "error": "Workflow not found"}), 404
+
+        if not workflow.advance_to_next_step():
+            return jsonify({
+                "ok": False,
+                "error": "Cannot advance. Current step not completed."
+            }), 400
+
+        workflow_storage.save_workflow(workflow_id, workflow)
+
+        return jsonify({
+            "ok": True,
+            "current_step": workflow.get_current_step(),
+            "step_status": workflow.get_step_status(workflow.get_current_step())
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.post("/api/workshops/<workshop_id>/workflow/<workflow_id>/go-back")
+def go_back_workflow(workshop_id, workflow_id):
+    """
+    Go back to a previous step.
+
+    Body:
+        {
+            "target_step": int
+        }
+
+    Returns:
+        {
+            "current_step": int,
+            "step_status": Dict
+        }
+    """
+    try:
+        data = request.get_json()
+        target_step = data.get("target_step")
+
+        workflow = workflow_storage.load_workflow(workflow_id)
+        if not workflow:
+            return jsonify({"ok": False, "error": "Workflow not found"}), 404
+
+        if not workflow.go_back_to_step(target_step):
+            return jsonify({
+                "ok": False,
+                "error": f"Cannot go back to step {target_step}"
+            }), 400
+
+        workflow_storage.save_workflow(workflow_id, workflow)
+
+        return jsonify({
+            "ok": True,
+            "current_step": workflow.get_current_step(),
+            "step_status": workflow.get_step_status(workflow.get_current_step())
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.get("/api/workshops/<workshop_id>/workflow/<workflow_id>/metrics")
+def get_workflow_metrics(workshop_id, workflow_id):
+    """
+    Get code metrics for current step.
+
+    Returns:
+        {
+            "complexity": int,
+            "coverage": float,
+            "duplication": float,
+            "has_type_hints": bool,
+            "has_docstring": bool,
+            "lines_of_code": int
+        }
+    """
+    try:
+        workflow = workflow_storage.load_workflow(workflow_id)
+        if not workflow:
+            return jsonify({"ok": False, "error": "Workflow not found"}), 404
+
+        current_step = workflow.get_current_step()
+        code = workflow.get_step_code(current_step)
+
+        metrics = code_metrics.get_metrics_summary(code)
+
+        return jsonify({
+            "ok": True,
+            **metrics
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
 
 # ------- Frontend -------
 @app.get("/")
