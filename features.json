@@ -110,6 +110,73 @@
               "Returns 404 for nonexistent workflow",
               "Calculates metrics for current step code"
             ]
+          },
+          {
+            "path": "/api/users/{user_id}/achievements",
+            "method": "GET",
+            "description": "Get all achievements for a user",
+            "testCases": [
+              "Returns 200 status",
+              "Returns achievements array",
+              "Returns total_points",
+              "Each achievement has id, name, description, icon, category, points, unlocked_at"
+            ]
+          },
+          {
+            "path": "/api/users/{user_id}/badges",
+            "method": "GET",
+            "description": "Get all badges for a user",
+            "testCases": [
+              "Returns 200 status",
+              "Returns badges array",
+              "Returns showcase with organized badges",
+              "Each badge has id, achievement_id, name, emoji, rarity, color, unlock_date"
+            ]
+          },
+          {
+            "path": "/api/users/{user_id}/stats",
+            "method": "GET",
+            "description": "Get user statistics",
+            "testCases": [
+              "Returns 200 status",
+              "Returns stats with all user metrics",
+              "Returns user rank",
+              "Stats include skill levels, completion counts, time tracking"
+            ]
+          },
+          {
+            "path": "/api/users/{user_id}/workflows",
+            "method": "GET",
+            "description": "List user's workflow progress",
+            "testCases": [
+              "Returns 200 status",
+              "Returns workflows array",
+              "Each workflow has workflow_id, user_id, workshop_id, completion info"
+            ]
+          },
+          {
+            "path": "/api/leaderboard",
+            "method": "GET",
+            "description": "Get global leaderboard",
+            "testCases": [
+              "Returns 200 status",
+              "Accepts limit query param (default 10)",
+              "Accepts offset query param (default 0)",
+              "Returns leaderboard array sorted by points"
+            ]
+          },
+          {
+            "path": "/api/workflows/{workflow_id}/complete",
+            "method": "POST",
+            "description": "Mark workflow as complete and check achievements",
+            "testCases": [
+              "Accepts user_id in request body",
+              "Returns 200 on success",
+              "Returns achievements_unlocked array",
+              "Returns updated stats",
+              "Returns 400 if user_id missing",
+              "Returns 404 if workflow not found"
+            ]
           }
         ]
       },
@@ -331,6 +398,120 @@
               "Handles literal values in placeholders",
               "Converts arrays to comma-separated strings",
               "Returns placeholder text for unresolved paths"
+            ]
+          }
+        ]
+      },
+      "progressTracking": {
+        "description": "Workflow progress persistence and tracking",
+        "features": [
+          {
+            "name": "WorkflowProgress class",
+            "testCases": [
+              "Tracks workflow_id, user_id, workshop_id",
+              "Tracks current_step and steps_completed",
+              "Stores code_per_step for each step",
+              "Stores validation_results for each step",
+              "Tracks started_at, last_updated_at, completed_at timestamps",
+              "Tracks time_spent_seconds",
+              "Tracks hints_used per step",
+              "Tracks attempts_per_step",
+              "Calculates completion percentage",
+              "Serializes/deserializes to/from dictionary"
+            ]
+          },
+          {
+            "name": "WorkflowStorage progress methods",
+            "testCases": [
+              "save_progress() persists WorkflowProgress to JSON",
+              "load_progress() retrieves WorkflowProgress from JSON",
+              "delete_progress() removes progress file",
+              "list_user_workflows() returns all workflows for user",
+              "get_progress_stats() calculates aggregated statistics",
+              "Progress organized by user_id/workflow_id.json structure"
+            ]
+          }
+        ]
+      },
+      "achievements": {
+        "description": "TDD-specific achievement system with gamification",
+        "features": [
+          {
+            "name": "Achievement class",
+            "testCases": [
+              "Achievement has id, name, description, icon, category, points",
+              "Categories: red, green, refactor, mastery, streak",
+              "Serializes to dictionary"
+            ]
+          },
+          {
+            "name": "AchievementTracker service",
+            "testCases": [
+              "Defines 25+ achievements across all categories",
+              "RED phase: Red Analyst, Test Writer, Test Master, Edge Case Hunter, Assertion Expert",
+              "GREEN phase: Green Engineer, Code Implementer, Code Master, Minimal Coder, First Try",
+              "REFACTOR phase: Refactor Master, Code Polisher, Type Hint Pro, Documentation Expert, Code Quality Champion",
+              "Mastery: TDD Novice, TDD Practitioner, TDD Expert, Perfect Workflow, Speed Runner",
+              "Streak: On Fire, Unstoppable, Legend",
+              "unlock_achievement() marks achievement as unlocked",
+              "get_user_achievements() returns all unlocked achievements",
+              "get_total_points() calculates total points",
+              "Persists achievements to JSON files"
+            ]
+          }
+        ]
+      },
+      "badges": {
+        "description": "Visual badge system with rarity levels",
+        "features": [
+          {
+            "name": "Badge class",
+            "testCases": [
+              "Badge has id, achievement_id, name, emoji, rarity, unlock_date",
+              "Rarity levels: common, uncommon, rare, epic, legendary",
+              "Color property maps rarity to hex color",
+              "Serializes to dictionary"
+            ]
+          },
+          {
+            "name": "BadgeDisplay service",
+            "testCases": [
+              "get_rarity_for_points() determines rarity from points",
+              "create_badge_from_achievement() creates badge from achievement",
+              "get_badge_showcase() organizes badges for dashboard",
+              "get_rarity_stats() counts badges by rarity",
+              "Badges organized by rarity and category"
+            ]
+          }
+        ]
+      },
+      "userStats": {
+        "description": "User statistics and skill level tracking",
+        "features": [
+          {
+            "name": "UserStats class",
+            "testCases": [
+              "Tracks total_workflows_completed",
+              "Tracks total_time_spent_hours",
+              "Tracks current_streak and longest_streak",
+              "Tracks total_achievements and total_points",
+              "Calculates average_time_per_workflow",
+              "Calculates average_hints_per_workflow",
+              "Calculates average_attempts_per_step",
+              "Tracks per-phase completions (red, green, refactor)",
+              "Tracks skill_level per phase (1-5)",
+              "Serializes to dictionary"
+            ]
+          },
+          {
+            "name": "StatsCalculator service",
+            "testCases": [
+              "calculate_user_stats() computes comprehensive statistics",
+              "calculate_skill_level() determines phase skill (1-5)",
+              "get_leaderboard() returns top users",
+              "get_user_rank() returns user's rank",
+              "get_streak_info() calculates current and longest streaks",
+              "Skill level increases with more achievements"
             ]
           }
         ]
