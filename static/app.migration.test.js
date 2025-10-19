@@ -127,113 +127,83 @@ function getSavedCode_FIXED(moduleId, workshopId, approachId) {
 }
 
 // Test Suite
-console.log('\n=== Testing localStorage Migration (Issue #29) ===\n');
-
-// Test 1: BUGGY version should fail to retrieve old format code
-console.log('Test 1: BUGGY version with old string format');
-localStorage.clear();
-state.progress = {
-  'python_basics': {
-    completed: 1,
-    scores: { 'basics_01': 100 },
-    code: {
-      'basics_01': 'def even_squares(nums):\n    result = []\n    for n in nums:\n        if n % 2 == 0:\n            result.append(n*n)\n    return result'
-    }
-  }
-};
-saveProgress();
-loadProgress();
-
-const buggyResult = getSavedCode_BUGGY('python_basics', 'basics_01', 'comprehension');
-if (buggyResult === null) {
-  console.log('✅ EXPECTED: Buggy version returns null (bug confirmed)');
-} else {
-  console.log('❌ UNEXPECTED: Buggy version returned code:', buggyResult);
-}
-
-// Test 2: FIXED version should migrate and retrieve old format code
-console.log('\nTest 2: FIXED version with old string format');
-localStorage.clear();
-state.progress = {
-  'python_basics': {
-    completed: 1,
-    scores: { 'basics_01': 100 },
-    code: {
-      'basics_01': 'def even_squares(nums):\n    result = []\n    for n in nums:\n        if n % 2 == 0:\n            result.append(n*n)\n    return result'
-    }
-  }
-};
-saveProgress();
-loadProgress();
-
-const fixedResult = getSavedCode_FIXED('python_basics', 'basics_01', 'comprehension');
-if (fixedResult && fixedResult.includes('even_squares')) {
-  console.log('✅ PASS: Fixed version returns migrated code');
-  console.log('   Code preview:', fixedResult.substring(0, 50) + '...');
-} else {
-  console.log('❌ FAIL: Fixed version did not return code');
-}
-
-// Test 3: Verify migration persisted to localStorage
-console.log('\nTest 3: Verify migration persisted');
-loadProgress();
-const migratedStructure = state.progress['python_basics'].code['basics_01'];
-if (typeof migratedStructure === 'object' && migratedStructure['comprehension']) {
-  console.log('✅ PASS: Code structure migrated to object format');
-  console.log('   Structure:', JSON.stringify(migratedStructure, null, 2).substring(0, 100) + '...');
-} else {
-  console.log('❌ FAIL: Code structure not migrated');
-  console.log('   Structure:', typeof migratedStructure, migratedStructure);
-}
-
-// Test 4: FIXED version should work with new format
-console.log('\nTest 4: FIXED version with new object format');
-localStorage.clear();
-state.progress = {
-  'python_basics': {
-    completed: 1,
-    scores: { 'basics_01': 100 },
-    code: {
-      'basics_01': {
-        'loop': 'def even_squares(nums):\n    result = []\n    for n in nums:\n        if n % 2 == 0:\n            result.append(n*n)\n    return result',
-        'comprehension': 'def even_squares(nums):\n    return [n*n for n in nums if n % 2 == 0]'
+describe('localStorage Migration (Issue #29)', () => {
+  test('BUGGY version should fail to retrieve old format code', () => {
+    localStorage.clear();
+    state.progress = {
+      'python_basics': {
+        completed: 1,
+        scores: { 'basics_01': 100 },
+        code: {
+          'basics_01': 'def even_squares(nums):\n    result = []\n    for n in nums:\n        if n % 2 == 0:\n            result.append(n*n)\n    return result'
+        }
       }
-    }
-  }
-};
-saveProgress();
-loadProgress();
+    };
+    saveProgress();
+    loadProgress();
 
-const newFormatResult = getSavedCode_FIXED('python_basics', 'basics_01', 'comprehension');
-if (newFormatResult && newFormatResult.includes('return [n*n')) {
-  console.log('✅ PASS: Fixed version works with new format');
-  console.log('   Code preview:', newFormatResult.substring(0, 50) + '...');
-} else {
-  console.log('❌ FAIL: Fixed version did not work with new format');
-}
+    const buggyResult = getSavedCode_BUGGY('python_basics', 'basics_01', 'comprehension');
+    expect(buggyResult).toBeNull();
+  });
 
-// Test 5: FIXED version should work with single-approach workshops
-console.log('\nTest 5: FIXED version with single-approach workshop');
-localStorage.clear();
-state.progress = {
-  'python_basics': {
-    completed: 1,
-    scores: { 'basics_02': 100 },
-    code: {
-      'basics_02': 'def single_approach():\n    return "single"'
-    }
-  }
-};
-saveProgress();
-loadProgress();
+  test('FIXED version should migrate and retrieve old format code', () => {
+    localStorage.clear();
+    state.progress = {
+      'python_basics': {
+        completed: 1,
+        scores: { 'basics_01': 100 },
+        code: {
+          'basics_01': 'def even_squares(nums):\n    result = []\n    for n in nums:\n        if n % 2 == 0:\n            result.append(n*n)\n    return result'
+        }
+      }
+    };
+    saveProgress();
+    loadProgress();
 
-const singleApproachResult = getSavedCode_FIXED('python_basics', 'basics_02', null);
-if (singleApproachResult && singleApproachResult.includes('single_approach')) {
-  console.log('✅ PASS: Fixed version works with single-approach workshops');
-  console.log('   Code preview:', singleApproachResult.substring(0, 50) + '...');
-} else {
-  console.log('❌ FAIL: Fixed version did not work with single-approach');
-}
+    const fixedResult = getSavedCode_FIXED('python_basics', 'basics_01', 'comprehension');
+    expect(fixedResult).toBeTruthy();
+    expect(fixedResult).toContain('even_squares');
+  });
 
-console.log('\n=== Test Suite Complete ===\n');
+  test('FIXED version should work with new format', () => {
+    localStorage.clear();
+    state.progress = {
+      'python_basics': {
+        completed: 1,
+        scores: { 'basics_01': 100 },
+        code: {
+          'basics_01': {
+            'loop': 'def even_squares(nums):\n    result = []\n    for n in nums:\n        if n % 2 == 0:\n            result.append(n*n)\n    return result',
+            'comprehension': 'def even_squares(nums):\n    return [n*n for n in nums if n % 2 == 0]'
+          }
+        }
+      }
+    };
+    saveProgress();
+    loadProgress();
+
+    const newFormatResult = getSavedCode_FIXED('python_basics', 'basics_01', 'comprehension');
+    expect(newFormatResult).toBeTruthy();
+    expect(newFormatResult).toContain('return [n*n');
+  });
+
+  test('FIXED version should work with single-approach workshops', () => {
+    localStorage.clear();
+    state.progress = {
+      'python_basics': {
+        completed: 1,
+        scores: { 'basics_02': 100 },
+        code: {
+          'basics_02': 'def single_approach():\n    return "single"'
+        }
+      }
+    };
+    saveProgress();
+    loadProgress();
+
+    const singleApproachResult = getSavedCode_FIXED('python_basics', 'basics_02', null);
+    expect(singleApproachResult).toBeTruthy();
+    expect(singleApproachResult).toContain('single_approach');
+  });
+});
 
