@@ -22,8 +22,18 @@ from app.services.workflow_state import TDDWorkflowState
 from app.services.step_validator import StepValidator
 from app.services.workflow_storage import WorkflowStorage
 from app.services.code_metrics import CodeMetrics
+from app.services.workflow_progress import WorkflowProgress
+from app.services.achievements import AchievementTracker
+from app.services.badges import BadgeDisplay
+from app.services.user_stats import StatsCalculator
 
 app = Flask(__name__, static_folder="static", static_url_path="")
+
+# Initialize services
+workflow_storage = WorkflowStorage("workflows")
+achievement_tracker = AchievementTracker("workflows")
+badge_display = BadgeDisplay()
+stats_calculator = StatsCalculator("workflows")
 
 # ------- Modules API -------
 @app.get("/api/modules")
@@ -766,6 +776,188 @@ def get_workflow_metrics(workshop_id, workflow_id):
         return jsonify({
             "ok": True,
             **metrics
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+# ------- Achievement & Progress API -------
+@app.get("/api/users/<user_id>/achievements")
+def get_user_achievements(user_id):
+    """
+    Get all achievements for a user.
+
+    Returns:
+        {
+            "ok": bool,
+            "achievements": List[Achievement],
+            "total_points": int
+        }
+    """
+    try:
+        achievements = achievement_tracker.get_user_achievements(user_id)
+        total_points = achievement_tracker.get_total_points(user_id)
+
+        return jsonify({
+            "ok": True,
+            "achievements": achievements,
+            "total_points": total_points
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.get("/api/users/<user_id>/badges")
+def get_user_badges(user_id):
+    """
+    Get all badges for a user.
+
+    Returns:
+        {
+            "ok": bool,
+            "badges": List[Badge],
+            "showcase": Dict
+        }
+    """
+    try:
+        achievements = achievement_tracker.get_user_achievements(user_id)
+        badges = [badge_display.create_badge_from_achievement(a).to_dict() for a in achievements]
+        showcase = badge_display.get_badge_showcase(badges)
+
+        return jsonify({
+            "ok": True,
+            "badges": badges,
+            "showcase": showcase
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.get("/api/users/<user_id>/stats")
+def get_user_stats(user_id):
+    """
+    Get user statistics.
+
+    Returns:
+        {
+            "ok": bool,
+            "stats": UserStats,
+            "rank": int
+        }
+    """
+    try:
+        stats = stats_calculator.calculate_user_stats(user_id)
+        rank = stats_calculator.get_user_rank(user_id)
+
+        return jsonify({
+            "ok": True,
+            "stats": stats.to_dict(),
+            "rank": rank
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.get("/api/users/<user_id>/workflows")
+def list_user_workflows(user_id):
+    """
+    List user's workflow progress.
+
+    Returns:
+        {
+            "ok": bool,
+            "workflows": List[WorkflowProgress]
+        }
+    """
+    try:
+        workflow_ids = workflow_storage.list_user_workflows(user_id)
+        workflows = []
+
+        for workflow_id in workflow_ids:
+            progress = workflow_storage.load_progress(user_id, workflow_id)
+            if progress:
+                workflows.append(progress.to_dict())
+
+        return jsonify({
+            "ok": True,
+            "workflows": workflows
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.get("/api/leaderboard")
+def get_leaderboard():
+    """
+    Get global leaderboard.
+
+    Query params:
+        limit: int (default 10)
+        offset: int (default 0)
+
+    Returns:
+        {
+            "ok": bool,
+            "leaderboard": List[Dict],
+            "user_rank": int
+        }
+    """
+    try:
+        limit = request.args.get("limit", 10, type=int)
+        offset = request.args.get("offset", 0, type=int)
+
+        leaderboard = stats_calculator.get_leaderboard(limit, offset)
+
+        return jsonify({
+            "ok": True,
+            "leaderboard": leaderboard
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.post("/api/workflows/<workflow_id>/complete")
+def complete_workflow(workflow_id):
+    """
+    Mark workflow as complete and check for achievements.
+
+    Body:
+        {
+            "user_id": str
+        }
+
+    Returns:
+        {
+            "ok": bool,
+            "achievements_unlocked": List[Achievement],
+            "stats": UserStats
+        }
+    """
+    try:
+        data = request.get_json()
+        user_id = data.get("user_id")
+
+        if not user_id:
+            return jsonify({"ok": False, "error": "user_id required"}), 400
+
+        # Load progress
+        progress = workflow_storage.load_progress(user_id, workflow_id)
+        if not progress:
+            return jsonify({"ok": False, "error": "Workflow not found"}), 404
+
+        # Mark as complete
+        progress.mark_workflow_complete()
+        workflow_storage.save_progress(progress)
+
+        # Check for achievements
+        achievements_unlocked = []
+
+        # TDD Novice - Complete 1 full TDD workflow
+        if progress.is_complete():
+            if achievement_tracker.unlock_achievement(user_id, "tdd_novice"):
+                achievements_unlocked.append(achievement_tracker.ACHIEVEMENTS["tdd_novice"].to_dict())
+
+        # Get updated stats
+        stats = stats_calculator.calculate_user_stats(user_id)
+
+        return jsonify({
+            "ok": True,
+            "achievements_unlocked": achievements_unlocked,
+            "stats": stats.to_dict()
         })
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 400

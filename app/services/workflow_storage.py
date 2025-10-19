@@ -7,6 +7,7 @@ import json
 import os
 from typing import Dict, List, Optional
 from .workflow_state import TDDWorkflowState
+from .workflow_progress import WorkflowProgress
 
 
 class WorkflowStorage:
@@ -114,13 +115,145 @@ class WorkflowStorage:
     def workflow_exists(self, workflow_id: str) -> bool:
         """
         Check if a workflow exists.
-        
+
         Args:
             workflow_id: Unique workflow identifier
-            
+
         Returns:
             True if workflow exists
         """
         path = self._get_workflow_path(workflow_id)
         return os.path.exists(path)
+
+    def _get_progress_path(self, user_id: str, workflow_id: str) -> str:
+        """Get file path for workflow progress."""
+        user_dir = os.path.join(self.storage_dir, user_id)
+        return os.path.join(user_dir, f"{workflow_id}_progress.json")
+
+    def _ensure_user_dir(self, user_id: str) -> None:
+        """Create user directory if it doesn't exist."""
+        user_dir = os.path.join(self.storage_dir, user_id)
+        if not os.path.exists(user_dir):
+            os.makedirs(user_dir, exist_ok=True)
+
+    def save_progress(self, progress: WorkflowProgress) -> None:
+        """
+        Save workflow progress to JSON file.
+
+        Args:
+            progress: WorkflowProgress instance to save
+        """
+        self._ensure_user_dir(progress.user_id)
+        path = self._get_progress_path(progress.user_id, progress.workflow_id)
+        data = progress.to_dict()
+
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+
+    def load_progress(self, user_id: str, workflow_id: str) -> Optional[WorkflowProgress]:
+        """
+        Load workflow progress from JSON file.
+
+        Args:
+            user_id: User identifier
+            workflow_id: Workflow identifier
+
+        Returns:
+            WorkflowProgress instance or None if not found
+        """
+        path = self._get_progress_path(user_id, workflow_id)
+
+        if not os.path.exists(path):
+            return None
+
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return WorkflowProgress.from_dict(data)
+        except (json.JSONDecodeError, KeyError):
+            return None
+
+    def delete_progress(self, user_id: str, workflow_id: str) -> bool:
+        """
+        Delete workflow progress file.
+
+        Args:
+            user_id: User identifier
+            workflow_id: Workflow identifier
+
+        Returns:
+            True if deleted, False if not found
+        """
+        path = self._get_progress_path(user_id, workflow_id)
+
+        if not os.path.exists(path):
+            return False
+
+        try:
+            os.remove(path)
+            return True
+        except OSError:
+            return False
+
+    def list_user_workflows(self, user_id: str) -> List[str]:
+        """
+        List all workflow progress files for a user.
+
+        Args:
+            user_id: User identifier
+
+        Returns:
+            List of workflow IDs
+        """
+        user_dir = os.path.join(self.storage_dir, user_id)
+
+        if not os.path.exists(user_dir):
+            return []
+
+        workflows = []
+        for filename in os.listdir(user_dir):
+            if filename.endswith('_progress.json'):
+                workflow_id = filename[:-14]  # Remove _progress.json
+                workflows.append(workflow_id)
+
+        return sorted(workflows)
+
+    def get_progress_stats(self, user_id: str) -> Dict:
+        """
+        Get aggregated statistics for all user workflows.
+
+        Args:
+            user_id: User identifier
+
+        Returns:
+            Dictionary with aggregated stats
+        """
+        workflow_ids = self.list_user_workflows(user_id)
+
+        total_workflows = len(workflow_ids)
+        completed_workflows = 0
+        total_time_seconds = 0
+        total_hints_used = 0
+        total_attempts = 0
+
+        for workflow_id in workflow_ids:
+            progress = self.load_progress(user_id, workflow_id)
+            if progress:
+                if progress.is_complete():
+                    completed_workflows += 1
+                total_time_seconds += progress.time_spent_seconds
+                total_hints_used += progress.get_total_hints_used()
+                total_attempts += progress.get_total_attempts()
+
+        return {
+            "total_workflows": total_workflows,
+            "completed_workflows": completed_workflows,
+            "completion_rate": (completed_workflows / total_workflows * 100) if total_workflows > 0 else 0,
+            "total_time_seconds": total_time_seconds,
+            "total_hints_used": total_hints_used,
+            "total_attempts": total_attempts,
+            "average_time_per_workflow": (total_time_seconds / total_workflows) if total_workflows > 0 else 0,
+            "average_hints_per_workflow": (total_hints_used / total_workflows) if total_workflows > 0 else 0,
+            "average_attempts_per_workflow": (total_attempts / total_workflows) if total_workflows > 0 else 0,
+        }
 
