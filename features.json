@@ -874,6 +874,147 @@
           ]
         }
       ]
+    },
+    "frontend": {
+      "tddWorkflow": {
+        "description": "Phase 4: Frontend UI & Integration for TDD Training Camp",
+        "relatedIssue": "#23",
+        "components": [
+          {
+            "name": "WorkflowAPI",
+            "path": "static/js/services/workflow-api.js",
+            "description": "API client for backend workflow communication",
+            "methods": [
+              "startWorkflow(workshopId)",
+              "getWorkflow(workshopId, workflowId)",
+              "validateStep(workshopId, workflowId, step, code)",
+              "advanceStep(workshopId, workflowId)",
+              "goBackStep(workshopId, workflowId)",
+              "getMetrics(workshopId, workflowId)",
+              "getHint(workshopId, workflowId, step, level)",
+              "getExample(workshopId, workflowId, step)",
+              "getSolution(workshopId, workflowId, step)",
+              "getAchievements(userId)",
+              "getBadges(userId)",
+              "getStats(userId)",
+              "completeWorkflow(workflowId, userId)"
+            ]
+          },
+          {
+            "name": "PhaseProgress",
+            "path": "static/js/components/phase-progress.js",
+            "description": "Visualizes 6-step TDD workflow across 3 phases (RED, GREEN, REFACTOR)",
+            "features": [
+              "Displays 3 phases with 2 steps each",
+              "Shows step status (complete, current, locked)",
+              "Updates on step advancement",
+              "Color-coded phase indicators"
+            ]
+          },
+          {
+            "name": "RequirementsChecklist",
+            "path": "static/js/components/requirements-checklist.js",
+            "description": "Tracks step requirements with checkboxes and progress",
+            "features": [
+              "Displays step-specific requirements",
+              "Checkbox tracking for completion",
+              "Progress bar showing completion percentage",
+              "Auto-check based on validation results"
+            ]
+          },
+          {
+            "name": "ValidationFeedback",
+            "path": "static/js/components/validation-feedback.js",
+            "description": "Displays validation results with color-coded feedback",
+            "features": [
+              "Shows success/error/warning messages",
+              "Displays validation errors with details",
+              "Shows warnings for code quality issues",
+              "Hint display integration"
+            ]
+          },
+          {
+            "name": "StepCodeEditor",
+            "path": "static/js/components/step-code-editor.js",
+            "description": "Code editor with tab handling and metrics display",
+            "features": [
+              "Syntax highlighting for Python code",
+              "Tab key support for indentation",
+              "Starter code templates per step",
+              "Code metrics display (complexity, coverage, etc.)",
+              "Previous code history viewing"
+            ]
+          },
+          {
+            "name": "HintsPanel",
+            "path": "static/js/components/hints-panel.js",
+            "description": "Progressive hint system with 4 levels",
+            "features": [
+              "4-level hint progression (general → specific → example → solution)",
+              "Tracks hints used for analytics",
+              "Resets on step change",
+              "Prevents solution spoilers"
+            ]
+          },
+          {
+            "name": "AchievementNotification",
+            "path": "static/js/components/achievement-notification.js",
+            "description": "Displays achievement unlocks with animations",
+            "features": [
+              "Achievement unlock notifications",
+              "Badge earned notifications",
+              "Streak update notifications",
+              "Level up notifications",
+              "Animated display with auto-dismiss"
+            ]
+          },
+          {
+            "name": "TDDWorkflowComponent",
+            "path": "static/js/components/tdd-workflow.js",
+            "description": "Main orchestrator component for TDD workflow",
+            "features": [
+              "Manages all sub-components",
+              "Handles workflow state",
+              "Coordinates step validation and advancement",
+              "Manages code persistence per step",
+              "Integrates with backend API"
+            ]
+          }
+        ],
+        "styling": {
+          "path": "static/css/tdd-workflow.css",
+          "description": "Responsive design for TDD workflow",
+          "features": [
+            "Mobile-first responsive design",
+            "Desktop (1200px+), tablet (768px-1199px), mobile (<768px) breakpoints",
+            "Grid layouts for phase progress and panels",
+            "Color-coded phase indicators (RED, GREEN, REFACTOR)",
+            "Animated transitions and feedback"
+          ]
+        },
+        "integration": {
+          "path": "static/index.html",
+          "description": "Main workshop page with mode selector",
+          "features": [
+            "Mode selector (Normal Mode vs TDD Workflow Mode)",
+            "Toggle between 3-panel layout and TDD workflow view",
+            "Integrated TDD workflow components",
+            "Achievement notification container"
+          ]
+        },
+        "testing": {
+          "unitTests": {
+            "path": "static/test-tdd-workflow-component.test.js",
+            "description": "Unit tests for all TDD components",
+            "coverage": "35 tests covering all components"
+          },
+          "integrationTests": {
+            "path": "static/test-workflow-integration.test.js",
+            "description": "Integration tests for full workflow",
+            "coverage": "23 tests covering workflow flow, step progression, code management, and error handling"
+          }
+        }
+      }
     }
   },
   "knownIssues": [

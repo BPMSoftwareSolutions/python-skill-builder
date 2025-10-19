@@ -3,9 +3,7 @@
  * Manages achievement unlock notifications and animations
  */
 
-import AchievementBadgeComponent from './achievement-badge.js';
-
-export class AchievementNotificationComponent {
+class AchievementNotificationComponent {
   constructor() {
     this.notificationQueue = [];
     this.isShowing = false;
@@ -90,5 +88,8 @@ export class AchievementNotificationComponent {
   }
 }
 
-export default AchievementNotificationComponent;
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = AchievementNotificationComponent;
+}
 

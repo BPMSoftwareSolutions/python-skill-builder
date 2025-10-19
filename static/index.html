@@ -36,6 +36,11 @@
                     </div>
                 </div>
                 <div class="workshop-header-right">
+                    <!-- Mode Selector -->
+                    <div class="mode-selector">
+                        <button id="mode-normal-btn" class="mode-btn mode-btn-active" data-mode="normal">📋 Normal Mode</button>
+                        <button id="mode-tdd-btn" class="mode-btn" data-mode="tdd">🔄 TDD Workflow</button>
+                    </div>
                     <div class="phase-indicators">
                         <button id="phase-red-btn" class="phase-btn phase-red" title="RED Phase: Tests Failing">🔴 RED</button>
                         <button id="phase-green-btn" class="phase-btn phase-green" title="GREEN Phase: Tests Passing">🟢 GREEN</button>
@@ -48,8 +53,13 @@
                 </div>
             </header>
 
+            <!-- TDD Workflow View (Hidden by default) -->
+            <div id="tdd-workflow-view" class="view hidden">
+                <div id="tdd-workflow-container"></div>
+            </div>
+
             <!-- 3-Panel Layout: Tests | Code Editor | Mock Data + Metrics -->
-            <div class="workshop-content-3panel">
+            <div id="workshop-content-3panel" class="workshop-content-3panel">
                 <!-- LEFT PANEL: Test Results -->
                 <div class="panel panel-tests">
                     <div class="panel-header">
@@ -132,6 +142,17 @@
             </div>
         </div>
     </div>
+
+    <!-- TDD Workflow Components -->
+    <link rel="stylesheet" href="css/tdd-workflow.css">
+    <script src="js/services/workflow-api.js"></script>
+    <script src="js/components/phase-progress.js"></script>
+    <script src="js/components/requirements-checklist.js"></script>
+    <script src="js/components/validation-feedback.js"></script>
+    <script src="js/components/step-code-editor.js"></script>
+    <script src="js/components/hints-panel.js"></script>
+    <script src="js/components/achievement-notification.js"></script>
+    <script src="js/components/tdd-workflow.js"></script>
 
     <script src="app.js"></script>
 </body>
