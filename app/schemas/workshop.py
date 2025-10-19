@@ -10,6 +10,7 @@ from enum import Enum
 from .test_suite import TestSuite
 from .mock_data import MockDataSet
 from .phase_guidance import PhaseGuidance
+from .tdd_workflow import TDDWorkflowDefinition
 
 
 class WorkshopPhase(str, Enum):
@@ -74,17 +75,18 @@ class WorkshopPhases:
 class Workshop:
     """
     Extended workshop model for TDD-first learning
-    
+
     Attributes:
         id: Unique identifier
         title: Workshop title
         description: Workshop description
         difficulty: Difficulty level (beginner, intermediate, advanced)
         estimated_minutes: Estimated time to complete
-        
+
         # TDD-specific fields
         phases: TDD phases structure
-        
+        tdd_workflow: TDD workflow definition (step-by-step guidance)
+
         # Backward compatibility fields
         prompt: Original prompt (for backward compatibility)
         starter_code: Original starter code (for backward compatibility)
@@ -97,7 +99,8 @@ class Workshop:
     difficulty: str = "beginner"
     estimated_minutes: int = 15
     phases: Optional[WorkshopPhases] = None
-    
+    tdd_workflow: Optional[TDDWorkflowDefinition] = None
+
     # Backward compatibility
     prompt: Optional[str] = None
     starter_code: Optional[str] = None
@@ -117,11 +120,15 @@ class Workshop:
             'difficulty': self.difficulty,
             'estimated_minutes': self.estimated_minutes,
         }
-        
+
         # Add TDD structure if present
         if self.phases:
             data['phases'] = self.phases.to_dict()
-        
+
+        # Add TDD workflow if present
+        if self.tdd_workflow:
+            data['tdd_workflow'] = self.tdd_workflow.to_dict()
+
         # Add backward compatibility fields
         if self.prompt:
             data['prompt'] = self.prompt
@@ -131,7 +138,7 @@ class Workshop:
             data['hints'] = self.hints
         if self.tests:
             data['tests'] = self.tests
-        
+
         return data
 
     @classmethod
@@ -140,7 +147,11 @@ class Workshop:
         phases = None
         if data.get('phases'):
             phases = WorkshopPhases.from_dict(data['phases'])
-        
+
+        tdd_workflow = None
+        if data.get('tdd_workflow'):
+            tdd_workflow = TDDWorkflowDefinition.from_dict(data['tdd_workflow'])
+
         return cls(
             id=data['id'],
             title=data['title'],
@@ -148,6 +159,7 @@ class Workshop:
             difficulty=data.get('difficulty', 'beginner'),
             estimated_minutes=data.get('estimated_minutes', 15),
             phases=phases,
+            tdd_workflow=tdd_workflow,
             prompt=data.get('prompt'),
             starter_code=data.get('starter_code'),
             hints=data.get('hints', []),
