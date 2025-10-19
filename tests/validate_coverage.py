@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Validate that all features in features.json have corresponding tests.
 Run this as part of pre-commit hook or CI/CD pipeline.
@@ -8,6 +9,10 @@ import sys
 import os
 import re
 from pathlib import Path
+
+# Set UTF-8 encoding for stdout
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
 
 
 def load_features():
@@ -40,6 +45,10 @@ def validate_backend_api_coverage(features, test_functions):
 
     for endpoint in endpoints:
         path = endpoint['path'].replace('/', '_').replace('<', '').replace('>', '')
+        # Remove path parameters like {id}, {workflow_id}, etc.
+        path = re.sub(r'\{[^}]+\}', '', path)
+        # Replace hyphens with underscores for consistency with Python naming
+        path = path.replace('-', '_')
         method = endpoint['method'].lower()
 
         # Check for various test naming patterns

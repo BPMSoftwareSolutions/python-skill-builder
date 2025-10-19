@@ -174,7 +174,7 @@ export class MentorSolutionComponent {
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#039;'
+      '\'': '&#039;'
     };
     return text.replace(/[&<>"']/g, m => map[m]);
   }

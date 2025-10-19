@@ -45,6 +45,71 @@
               "Returns 400 for missing approachId when required",
               "Backward compatible with single-approach format"
             ]
+          },
+          {
+            "path": "/api/workshops/{id}/workflow/start",
+            "method": "POST",
+            "description": "Initialize a new TDD workflow for a workshop",
+            "testCases": [
+              "Creates new workflow with 6 steps",
+              "Returns workflow_id, current_step, steps_status",
+              "Step 1 is unlocked, steps 2-6 are locked",
+              "All steps initialized with empty code and no validation results"
+            ]
+          },
+          {
+            "path": "/api/workshops/{id}/workflow/{workflow_id}",
+            "method": "GET",
+            "description": "Get current workflow state",
+            "testCases": [
+              "Returns current_step, steps_status, code_per_step",
+              "Returns 404 for nonexistent workflow",
+              "Returns all 6 steps with metadata"
+            ]
+          },
+          {
+            "path": "/api/workshops/{id}/workflow/{workflow_id}/validate-step",
+            "method": "POST",
+            "description": "Validate current step",
+            "testCases": [
+              "Accepts step number and code",
+              "Returns valid, errors, warnings, can_advance, validation_result",
+              "Stores code for the step",
+              "Marks step complete if valid",
+              "Returns 400 for invalid step"
+            ]
+          },
+          {
+            "path": "/api/workshops/{id}/workflow/{workflow_id}/advance",
+            "method": "POST",
+            "description": "Advance to next step",
+            "testCases": [
+              "Advances to next step if current step complete",
+              "Returns current_step and step_status",
+              "Returns 400 if current step not completed",
+              "Unlocks next step"
+            ]
+          },
+          {
+            "path": "/api/workshops/{id}/workflow/{workflow_id}/go-back",
+            "method": "POST",
+            "description": "Go back to a previous step",
+            "testCases": [
+              "Accepts target_step in request body",
+              "Returns current_step and step_status",
+              "Returns 400 for invalid target step",
+              "Allows editing previous steps"
+            ]
+          },
+          {
+            "path": "/api/workshops/{id}/workflow/{workflow_id}/metrics",
+            "method": "GET",
+            "description": "Get code metrics for current step",
+            "testCases": [
+              "Returns complexity, coverage, duplication, has_type_hints, has_docstring",
+              "Returns 404 for nonexistent workflow",
+              "Calculates metrics for current step code"
+            ]
           }
         ]
       },
@@ -125,6 +190,60 @@
               "Can detect for-loop usage",
               "Can detect string concatenation patterns",
               "Can provide pattern-specific feedback"
+            ]
+          }
+        ]
+      },
+      "workflow": {
+        "description": "TDD Workflow Engine for step-by-step guided learning",
+        "features": [
+          {
+            "name": "Workflow state management",
+            "testCases": [
+              "TDDWorkflowState tracks current step (1-6)",
+              "Workflow tracks completion status per step",
+              "Workflow tracks locked/unlocked status per step",
+              "Workflow stores code/input for each step",
+              "Workflow stores validation results",
+              "Workflow prevents advancing without meeting requirements",
+              "Workflow allows going back to previous steps",
+              "Workflow serializes/deserializes for persistence"
+            ]
+          },
+          {
+            "name": "Step validation engine",
+            "testCases": [
+              "STEP 1 validation: test function name starts with test_",
+              "STEP 1 validation: at least one assertion present",
+              "STEP 1 validation: test syntax is valid Python",
+              "STEP 1 validation: test actually fails when executed",
+              "STEP 3 validation: code syntax is valid Python",
+              "STEP 3 validation: required function exists and is callable",
+              "STEP 3 validation: user's test passes with user's code",
+              "STEP 5 validation: code syntax is valid Python",
+              "STEP 5 validation: user's test still passes (GREEN)",
+              "STEP 5 validation: code metrics improved or maintained"
+            ]
+          },
+          {
+            "name": "Code metrics calculator",
+            "testCases": [
+              "Calculate cyclomatic complexity",
+              "Calculate code coverage estimate",
+              "Calculate code duplication",
+              "Detect type hints presence",
+              "Detect docstring presence",
+              "Generate metrics summary"
+            ]
+          },
+          {
+            "name": "Workflow persistence",
+            "testCases": [
+              "Save workflow state to JSON files",
+              "Load workflow state from JSON files",
+              "Delete workflow state files",
+              "List all workflows",
+              "Check workflow existence"
             ]
           }
         ]
